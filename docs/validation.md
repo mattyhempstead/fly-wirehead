@@ -81,3 +81,10 @@ These checks establish the numerical and presentation mechanisms. Rehabilitation
 Observer framing is wider, with a front face close-up that gradually pulls back, longer tracking moves, and 550 ms dissolves between rooms. The stair camera flows continuously into victory. Dissolves copy the tone-mapped observer framebuffer and are excluded from eye-camera capture. The live neural activity panel is the only in-view overlay; playback, status, and errors sit below the scene.
 
 Walking and treadmill cadence now use integrated speed ramps, wing phase accumulates continuously, and stair foot targets stay planted during stance and cross step edges during their airborne phase. All **35 JavaScript checks** passed, including speed/phase continuity, continuous stair footfalls, uninterrupted camera paths, and the matched stair-to-victory camera boundary. Browser checks covered wider framing, the bandage, rail visibility, scene transitions, the external replay button, and continuing measured telemetry without console errors. Numerical engine and stimulation behavior were unchanged; full-network assays were not repeated for these presentation changes.
+
+
+## Shorter recovery edit — 2026-09-12
+
+The sequence now runs for **33 seconds** with all five scenes retained. The opening remains a front face close-up; walking retains the stumble, and victory still raises both front legs. The climb uses three excerpts of the original 18-second motion, with two 320 ms dissolves; its source motion clock advances at one second per second between those edits. Treadmill footage uses the later part of the original cadence ramp.
+
+All **36 JavaScript checks** passed. The added check verifies the 33-second duration, exactly two climbing edits, and unchanged climbing speed within each excerpt. Camera continuity checks exclude only those explicit edits and retain the continuous climb-to-victory boundary. The replay duration label derives from the same scene timeline.

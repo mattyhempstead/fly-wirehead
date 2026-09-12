@@ -8,11 +8,10 @@ const blend = (a, b, p) => view(mix(a.position, b.position, p), mix(a.target, b.
 // Long, continuous observation moves; scenery changes are handled by a short dissolve.
 // These cameras never participate in the fly's retinal capture.
 export function recoveryCamera(frame, position) {
-  const t = frame.local;
+  const t = frame.id === 'stairs' ? frame.motionTime : frame.local;
   if (frame.id === 'unplugged') {
-    const face = view([lerp(1.82, 1.96, smoother(t / 6)), 1.73, .10], [.30, 1.43, 0], 'face');
-    const room = view([3.15, 2.65, 3.6], [-.05, 1.18, 0], 'observation');
-    return t <= 5.5 ? face : blend(face, room, smoother((t - 5.5) / 4.5));
+    const p = smoother(t / frame.duration);
+    return view([lerp(1.82, 2.4, p), lerp(1.73, 1.95, p), lerp(.1, .38, p)], [.30, 1.4, 0], 'face');
   }
   if (frame.id === 'walking') {
     const p = smoother(t / frame.duration);

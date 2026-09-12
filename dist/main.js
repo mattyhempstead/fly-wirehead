@@ -7,6 +7,7 @@ import { recoveryFrame, SCENES, DURATION } from './recovery-timeline.js';
 const $ = selector => document.querySelector(selector);
 const canvas = $('#scene'), reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const playback = createPlayback(), state = playback.state;
+$('#sequence-duration').textContent = `From the beginning · ${SCENES.length} scenes · ${DURATION} seconds`;
 let lab, status = null, connection = 'CONNECTING', connectionError = '', sceneFailed = false, sceneRendered = false;
 let current = recoveryFrame(0), hudClock = 0, messageTimer, commandPending = false;
 try { lab = createRecoveryLab(canvas); }

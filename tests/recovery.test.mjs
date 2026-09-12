@@ -37,13 +37,14 @@ test('terrain footfalls cross stair edges in the air and stay planted during sta
     }
   }
 });
-test('camera moves have no internal cuts and the summit flows into victory', () => {
+test('camera moves are continuous between intentional edits and the summit flows into victory', () => {
   for (const scene of SCENES) {
     let previous;
     for (let local = 0; local < scene.duration; local += .01) {
-      const current = recoveryCamera({ ...scene, local }, [local * .1, .7, 0]);
+      const frame = recoveryFrame(scene.start + local);
+      const current = { ...recoveryCamera(frame, [local * .1, .7, 0]), edit: frame.edit };
       assert.ok([...current.position, ...current.target].every(Number.isFinite));
-      if (previous) {
+      if (previous && previous.edit === current.edit) {
         assert.ok(Math.hypot(...current.position.map((n, i) => n - previous.position[i])) < .12);
         assert.ok(Math.hypot(...current.target.map((n, i) => n - previous.target[i])) < .05);
       }
@@ -51,10 +52,26 @@ test('camera moves have no internal cuts and the summit flows into victory', () 
     }
   }
   const position = [12.37, 6.6058, 0];
-  const before = recoveryCamera({ ...SCENES[3], local: 18 }, position);
+  const before = recoveryCamera({ ...SCENES[3], local: 10, motionTime: 18 }, position);
   const after = recoveryCamera({ ...SCENES[4], local: 0 }, position);
   assert.deepEqual(before.target, after.target);
   assert.ok(Math.hypot(...before.position.map((n, i) => n - after.position[i])) < 1e-10);
+});
+test('the shorter sequence trims travel with two edits instead of accelerating the climb', () => {
+  assert.equal(DURATION, 33);
+  assert.equal(SCENES.reduce((sum, scene) => sum + scene.duration, 0), DURATION);
+  assert.ok(SCENES.every(scene => scene.duration <= 10));
+  let previous, cuts = 0;
+  for (let local = 0; local < 10; local += .01) {
+    const frame = recoveryFrame(SCENES[3].start + local);
+    if (previous) {
+      if (frame.edit !== previous.edit) { cuts++; assert.ok(frame.motionTime - previous.motionTime > 3); }
+      else assert.ok(Math.abs(frame.motionTime - previous.motionTime - .01) < 1e-10);
+    }
+    previous = frame;
+  }
+  assert.equal(cuts, 2);
+  assert.ok(previous.motionTime > 17.98 && previous.motionTime <= 18);
 });
 
 test('the five scenes cut in order, unplug once, and hold the final victory', () => {
@@ -69,10 +86,10 @@ test('the five scenes cut in order, unplug once, and hold the final victory', ()
 });
 test('the stumble develops, holds, and resolves within the walking scene', () => {
   const start = SCENES[1].start;
-  assert.equal(recoveryFrame(start + 3).stumble, 0);
-  assert.ok(recoveryFrame(start + 5).stumble > .95);
-  assert.ok(recoveryFrame(start + 6).stumble > 0);
-  assert.equal(recoveryFrame(start + 8).stumble, 0);
+  assert.equal(recoveryFrame(start + 1).stumble, 0);
+  assert.ok(recoveryFrame(start + 2.9).stumble > .95);
+  assert.ok(recoveryFrame(start + 3.8).stumble > 0);
+  assert.equal(recoveryFrame(start + 5).stumble, 0);
   assert.equal(recoveryFrame(45).stumble, 0);
 });
 test('leg poses retain all segment lengths even at unreachable rail and victory targets', () => {

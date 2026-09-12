@@ -10,13 +10,13 @@ A small white wrap stays around the front right leg's joint—the leg that used 
 
 | Time | Scene |
 | --- | --- |
-| 0–10 s | **Unplugged.** A front close-up of the compound eyes as the cable lifts free, followed by a gradual pullback that reveals the wrapped leg and observation room. |
-| 10–24 s | **Learning to walk.** Parallel rails, hesitant steps, a buckling front leg and a near-fall, then another attempt. |
-| 24–36 s | **Treadmill.** A slow camera arc around a regular treadmill and a progressively quicker gait. |
-| 36–54 s | **The climb.** A full outdoor staircase, a gradual move into side tracking, then an arc toward the summit. |
-| 54–64 s | **Victory.** Catching its breath, raising both front legs, and a camera arc above the upper landing. |
+| 0–6 s | **Unplugged.** A front close-up of the compound eyes as the cable lifts free, with a gentle pullback. |
+| 6–14 s | **Learning to walk.** Parallel rails, hesitant steps, a buckling front leg and a near-fall, then another attempt. |
+| 14–19 s | **Treadmill.** A camera arc around a regular treadmill as the fly finds a running rhythm. |
+| 19–29 s | **The climb.** The full staircase, a cut to the middle of the climb, then another to the final approach. |
+| 29–33 s | **Victory.** Raising both front legs and a camera arc above the upper landing. |
 
-The final pose holds. Wider camera framing, continuous tracking, and brief dissolves connect the scenes; the climb flows directly into victory. Only the live neural activity panel sits over the scene. The sequence is a 3D simulation with choreographed rehabilitation and measured motor modulation, not a video or a claim that the network learned to walk.
+The complete sequence lasts **33 seconds**, then holds the final pose. Shorter holds and two edits through the climb condense the action while keeping the original climbing speed. Wider framing, smooth tracking, and brief dissolves connect the scenes; the final approach flows directly into victory. Only the live neural activity panel sits over the scene. The sequence is a 3D simulation with choreographed rehabilitation and measured motor modulation, not a video or a claim that the network learned to walk.
 
 ## Run locally
 

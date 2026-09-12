@@ -116,7 +116,7 @@ export function createRecoveryWorld(scene) {
         const curve = new THREE.CatmullRomCurve3([new THREE.Vector3(.1, 2.55, -.1), new THREE.Vector3(.18, 2.25, -.08), end.clone().add(new THREE.Vector3(.04, .2, 0)), end]);
         cable.geometry.dispose(); cable.geometry = new THREE.TubeGeometry(curve, 24, .013, 6);
       }
-      const belt = treadmillMotion(frame.local).belt;
+      const belt = treadmillMotion(frame.motionTime).belt;
       stripes.forEach((stripe, i) => { stripe.position.x = 1.23 - ((i * .145 + belt) % 2.7); });
     }
   };

@@ -51,7 +51,8 @@ export function createRecoveryLab(canvas) {
     resize(); frame = recoveryFrame(time);
     const changedRoom = lastFrame && frame.id !== lastFrame.id && !(lastFrame.id === 'stairs' && frame.id === 'victory');
     const seek = lastFrame && (time < lastFrame.time || time - lastFrame.time > .25);
-    if (changedRoom || seek) {
+    const changedEdit = lastFrame && frame.id === lastFrame.id && frame.edit !== lastFrame.edit;
+    if (changedRoom || changedEdit || seek) {
       // Retain the outgoing observer image before moving the specimen or switching rooms.
       // The eye-camera path below renders the world directly and cannot see this dissolve.
       if (!reduced) {
@@ -63,7 +64,7 @@ export function createRecoveryLab(canvas) {
       cameraReady = false; orbitX = orbitY = 0;
     }
     world.setScene(frame.id);
-    const neural = response.step(state, state.paused ? 0 : dt), local = frame.local;
+    const neural = response.step(state, state.paused ? 0 : dt), local = frame.local, motionTime = frame.motionTime;
     const fly = specimen.root, summitX = STEPS.count * STEPS.tread, summitY = STEPS.count * STEPS.rise;
     let gait = 0, phase = 0, stride = .2, rail = false, victory = 0, groundAt = null, terrainTravel = 0, settle = 0;
     fly.rotation.set(0, 0, 0); fly.position.set(0, .837 + .96 * FLY_SCALE, 0);
@@ -75,20 +76,20 @@ export function createRecoveryLab(canvas) {
       fly.rotation.x = frame.stumble * .19; fly.rotation.z = -frame.stumble * .17;
       gait = walk.cadence; phase = walk.phase; stride = .18; rail = true;
     } else if (frame.id === 'treadmill') {
-      phase = treadmillMotion(local).phase;
+      phase = treadmillMotion(motionTime).phase;
       fly.position.set(-.1 + Math.sin(local * 1.3) * .012, .257 + .96 * FLY_SCALE, 0);
-      gait = lerp(5, 15, ease(local / 10)); stride = lerp(.13, .27, ease(local / 10));
+      gait = lerp(5, 15, ease(motionTime / 10)); stride = lerp(.13, .27, ease(motionTime / 10));
       fly.rotation.z = .025 + Math.sin(phase * 2) * .006;
     } else if (frame.id === 'stairs') {
-      const travel = ease(local / frame.duration), x = lerp(-1.1, summitX + .85, travel);
+      const travel = ease(motionTime / 18), x = lerp(-1.1, summitX + .85, travel);
       const slope = STEPS.rise / STEPS.tread;
       fly.position.set(x, clamp(x + .18, 0, summitX) * slope + .96 * FLY_SCALE + .025, 0);
       fly.rotation.z = Math.atan(slope) * ease((x + .6) / .6) * (1 - ease((x - summitX + .25) / 1));
       gait = 12; terrainTravel = x + 1.1; phase = terrainTravel / (STEPS.tread * 2) * Math.PI * 2;
-      stride = .23; groundAt = stairHeight; settle = smoother((local - 16.3) / 1.7);
+      stride = .23; groundAt = stairHeight; settle = smoother((motionTime - 16.3) / 1.7);
     } else {
       fly.position.set(summitX + .85, summitY + .96 * FLY_SCALE + .025, 0);
-      victory = ease((local - 1.5) / 2);
+      victory = ease((local - .3) / 1.6);
       fly.rotation.z = -.035 * victory;
     }
     // Frame the stable root position, not each small motor-driven body movement.
@@ -115,9 +116,9 @@ export function createRecoveryLab(canvas) {
     smoothCamera.lerp(cameraAt, damping); smoothTarget.lerp(target, damping);
     camera.position.copy(smoothCamera); camera.lookAt(smoothTarget);
     renderer.setRenderTarget(null); renderer.render(scene, camera);
-    if (dissolveTime < .55) {
+    if (dissolveTime < .32) {
       dissolveTime += Math.max(0, Math.min(dt, .05));
-      dissolveMaterial.opacity = 1 - smoother(dissolveTime / .55);
+      dissolveMaterial.opacity = 1 - smoother(dissolveTime / .32);
       renderer.autoClear = false;
       try { renderer.render(dissolveScene, dissolveCamera); } finally { renderer.autoClear = true; }
     }
