@@ -137,3 +137,11 @@ Browser inspection confirmed the unobstructed central fly and visible rise-to-ho
 Added an external camera toolbar with Orbit/Pan drag modes, four directional buttons, and Recenter. Shift-drag pans from either mode; arrow keys pan when the scene is focused. Panning translates in the camera's screen plane without rotating or zooming, cancels an active reveal at its current pose, and remains available while paused. Recenter restores the pre-pan target while retaining angle and zoom. Room culling accounts for vertical panning.
 
 All **53 JavaScript checks** passed, including actual Three.js pixel projection across camera headings, tilts, close/room/campus spans, zoom levels, and portrait/landscape viewports. Additional checks cover pan takeover without drift, recentering, preset reset, Shift-drag and selected Pan mode, pointer release, and room coverage after vertical panning. The browser verified arrow buttons, drag-to-pan, unchanged angles/zoom, paused panning, and exact recentering. Rendering held 60 fps, shared telemetry remained connected, and no console errors or warnings appeared. The preview was left running with Pan selected.
+
+## Saved opening, 16:9 framing, and removed labels — 2026-09-12
+
+Captured the user's live camera settings before editing: theta −0.5831104771, phi 0.9205223878, and target [2.1668115332, 1.7721133003, 1.9304575839]. The reveal and Single station preset now restore this exact angle and pan. The visible vertical span of 3.1926130203 is preserved in the wider frame. The opening was visually compared with the supplied screenshot and verified through live camera status.
+
+The canvas now has a fixed 16:9 aspect ratio, with fullscreen letterboxing rules, and the station/block labels and their update code are removed. The normal browser view measured 1131.5 × 636.46875 CSS pixels: exactly 16:9, with zero remaining overlay label elements. The complete reveal finished at all 10,000 blocks, 60 fps, and three draw calls, with connected telemetry and no browser errors or warnings.
+
+All **53 JavaScript checks** passed. The reveal check now verifies restoration of the saved angle and pan on replay, while retaining continuous proportional zoom and exact final framing. Neural dynamics and media playback are unchanged.

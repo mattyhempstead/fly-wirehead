@@ -134,14 +134,17 @@ export function createMatrix(canvas, feed) {
   const radii = [.034, .022, .013];
   const campus = createCampus(scene, room, screenMesh);
   let lastTextureVersion = -1, width = 0, height = 0;
-  // Both grids have even dimensions: choose one of the four central stations
-  // in the detailed origin block, itself one of the campus's central blocks.
-  const openingStation = stations[Math.floor(ROWS / 2) * COLUMNS + Math.floor(COLUMNS / 2)];
+  // Saved from the user's chosen angle and pan on central station G5.
+  // Keep the visible vertical span when adapting that shot to the 16:9 frame.
+  const openingView = {
+    theta: -.5831104771069833, phi: .9205223878162124,
+    span: 3.192613020328341,
+    target: [2.1668115331565763, 1.772113300327674, 1.9304575839213705],
+  };
   const views = [
     { theta: -.66, phi: 1.10, span: 68, target: [0, 1, 0] },
     { theta: -.85, phi: 1.13, span: 12, target: [-8, 1.5, (ROWS / 2 - 1) * PITCH_Z] },
-    // Approach from the open side of this station's overhead supply rail.
-    { theta: -2.10, phi: 1.10, span: 5.4, target: [openingStation.x - .3, 1.7, openingStation.z] },
+    openingView,
     { theta: -.55, phi: 1.10, span: CAMPUS_SPAN, target: [...CAMPUS_CENTER] },
   ];
   const controls = createOrbitCamera(views);
@@ -198,7 +201,7 @@ export function createMatrix(canvas, feed) {
   }
   return {
     render,
-    startReveal() { controls.startReveal({ ...views[2], span: 3.35, target: [openingStation.x - .15, 1.85, openingStation.z] }); },
+    startReveal() { controls.startReveal(openingView); },
     cameraState: controls.snapshot,
     setView: controls.setView,
     beginOrbit: controls.beginOrbit,

@@ -3,7 +3,6 @@ import { MatrixFeed } from './matrix-feed.js';
 import { createPlayback, createFrameClock } from './simulation.js';
 import { BrainClient } from './backend.js';
 import { STATION_COUNT } from './matrix-timeline.js';
-import { BLOCK_COUNT } from './matrix-scale.js';
 import { bindOrbitInput } from './matrix-camera.js';
 
 const $ = selector => document.querySelector(selector), canvas = $('#scene');
@@ -31,9 +30,6 @@ function updateLabels() {
   $('#spike-value').textContent = status?.telemetry ? status.telemetry.total_spikes.toLocaleString() : '—';
   $('#input-source').textContent = feed.sensorStation === null ? 'Waiting for phone pixels' : `Reading station ${String(feed.sensorStation + 1).padStart(2, '0')} / ${STATION_COUNT}`;
   $('#pause').textContent = paused ? 'Resume floor' : 'Pause floor'; $('#pause').setAttribute('aria-pressed', String(paused));
-  const wide = (lab?.cameraState().span ?? 0) > 180;
-  $('#floor-state').textContent = !feed.ready ? 'LOADING FOOTAGE' : paused ? 'FLOOR PAUSED' : wide ? `${BLOCK_COUNT.toLocaleString()} BLOCKS` : `${STATION_COUNT} STATIONS ONLINE`;
-  $('#floor-index').textContent = wide ? '100 × 100' : 'ROOM 01 / 08 × 12';
   $('#engine-message').textContent = feed.error || (connection === 'OFFLINE' ? 'Visual demonstration running. Start the local Python server to connect the shared brain.' : status?.phase === 'loading' ? 'The floor is running while the local connectome loads.' : '');
   if (feed.error) { $('#scene-error').textContent = feed.error; $('#scene-error').hidden = false; }
   updateCameraControls();

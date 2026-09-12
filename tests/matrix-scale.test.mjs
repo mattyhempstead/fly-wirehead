@@ -40,7 +40,7 @@ test('the extended reveal reaches the room first, continues to the campus, and s
   const views = [
     { theta: -.66, phi: 1.10, span: 68, target: [0, 1, 0] },
     { theta: -.85, phi: 1.13, span: 12, target: [-8, 1.5, 18.75] },
-    { theta: -2.10, phi: 1.10, span: 3.35, target: [2.65, 1.85, 1.875] },
+    { theta: -.5831104771069833, phi: .9205223878162124, span: 3.192613020328341, target: [2.1668115331565763, 1.772113300327674, 1.9304575839213705] },
     { theta: -.55, phi: 1.10, span: CAMPUS_SPAN, target: [...CAMPUS_CENTER] },
   ];
   const controls = createOrbitCamera(views); controls.startReveal();
@@ -53,7 +53,7 @@ test('the extended reveal reaches the room first, continues to the campus, and s
     if (!atRoom && current.span >= views[0].span) atRoom = current;
     // This range includes both sides of the old 11-second room handoff.
     if (i >= 400 && i <= 2700) cruiseSpeeds.push(Math.log(current.span / previous.span) / .01);
-    assert.ok(Math.abs(current.phi - 1.10) < 1e-12, 'keep a low viewing angle throughout');
+    assert.ok(current.phi >= views[2].phi && current.phi <= views[3].phi, 'blend from the chosen angle toward the lower wide view');
     previous = current;
   }
   assert.ok(atRoom.span >= 68 && atRoom.span < 68.3);
@@ -62,7 +62,10 @@ test('the extended reveal reaches the room first, continues to the campus, and s
   assert.ok(Math.max(...cruiseSpeeds) - Math.min(...cruiseSpeeds) < 1e-9, 'constant proportional pullback speed');
   assert.deepEqual(controls.snapshot(), { ...views[3], zoom: 1, view: 3, reveal: null });
   controls.startReveal();
-  assert.equal(controls.snapshot().span, 3.35);
+  assert.equal(controls.snapshot().span, views[2].span);
+  assert.deepEqual(controls.snapshot().target, views[2].target, 'replay restores the chosen pan');
+  assert.equal(controls.snapshot().theta, views[2].theta);
+  assert.equal(controls.snapshot().phi, views[2].phi);
 });
 
 test('the entire campus stays inside the final frame on portrait and landscape screens', () => {
