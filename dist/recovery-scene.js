@@ -3,7 +3,8 @@ import { createRecoveryFly } from './fly-model.js';
 import { createRecoveryWorld } from './recovery-world.js';
 import { createMotionResponse } from './motion.js';
 import { recoveryFrame, FLY_SCALE, STEPS, ease, lerp, clamp } from './recovery-timeline.js';
-import { stairHeight } from './recovery-timeline.js';
+import { stairHeight, walkingMotion, treadmillMotion, smoother } from './recovery-timeline.js';
+import { recoveryCamera } from './recovery-camera.js';
 
 export function createRecoveryLab(canvas) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
@@ -22,102 +23,104 @@ export function createRecoveryLab(canvas) {
   const world = createRecoveryWorld(scene), specimen = createRecoveryFly(); scene.add(specimen.root);
   specimen.root.scale.setScalar(FLY_SCALE);
   const response = createMotionResponse(), target = new THREE.Vector3(), cameraAt = new THREE.Vector3();
+  const smoothTarget = new THREE.Vector3(), smoothCamera = new THREE.Vector3();
+  let dissolveTexture = new THREE.FramebufferTexture(1, 1);
+  dissolveTexture.colorSpace = THREE.SRGBColorSpace;
+  const dissolveScene = new THREE.Scene(), dissolveCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+  const dissolveMaterial = new THREE.MeshBasicMaterial({ map: dissolveTexture, transparent: true, depthTest: false, depthWrite: false, toneMapped: false });
+  const dissolveQuad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), dissolveMaterial); dissolveScene.add(dissolveQuad);
+  let dissolveTime = 1, cameraReady = false;
   const sensorTarget = new THREE.WebGLRenderTarget(90, 160); sensorTarget.texture.colorSpace = THREE.SRGBColorSpace;
   const pixels = new Uint8Array(90 * 160 * 4);
-  let frame = recoveryFrame(0), width = 0, height = 0, orbitX = 0, orbitY = 0, currentShot = '', lastFrame = null;
+  let frame = recoveryFrame(0), width = 0, height = 0, orbitX = 0, orbitY = 0, lastFrame = null;
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
   function resize() {
     const rect = canvas.getBoundingClientRect();
     if (rect.width === width && rect.height === height) return;
     width = rect.width; height = rect.height; renderer.setSize(width, height, false);
     camera.aspect = width / Math.max(height, 1);
-    // Compose the specimen above and to the left of its persistent telemetry.
-    camera.setViewOffset(width, height, width > 700 ? width * .14 : 0, height * .10, width, height);
+    dissolveTexture.dispose();
+    const size = renderer.getDrawingBufferSize(new THREE.Vector2());
+    dissolveTexture = new THREE.FramebufferTexture(size.x, size.y);
+    dissolveTexture.colorSpace = THREE.SRGBColorSpace;
+    dissolveMaterial.map = dissolveTexture; dissolveMaterial.needsUpdate = true;
+    dissolveTime = 1;
     camera.updateProjectionMatrix();
   }
   function render(time, dt, state) {
-    resize(); frame = recoveryFrame(time); world.setScene(frame.id);
+    resize(); frame = recoveryFrame(time);
+    const changedRoom = lastFrame && frame.id !== lastFrame.id && !(lastFrame.id === 'stairs' && frame.id === 'victory');
+    const seek = lastFrame && (time < lastFrame.time || time - lastFrame.time > .25);
+    if (changedRoom || seek) {
+      // Retain the outgoing observer image before moving the specimen or switching rooms.
+      // The eye-camera path below renders the world directly and cannot see this dissolve.
+      if (!reduced) {
+        // Copy the finished, tone-mapped image so transitions cannot flash brighter.
+        renderer.setRenderTarget(null); renderer.render(scene, camera);
+        renderer.copyFramebufferToTexture(dissolveTexture);
+        dissolveTime = 0;
+      }
+      cameraReady = false; orbitX = orbitY = 0;
+    }
+    world.setScene(frame.id);
     const neural = response.step(state, state.paused ? 0 : dt), local = frame.local;
     const fly = specimen.root, summitX = STEPS.count * STEPS.tread, summitY = STEPS.count * STEPS.rise;
-    let gait = 0, stride = .2, rail = false, victory = 0, groundAt = null, shot;
+    let gait = 0, phase = 0, stride = .2, rail = false, victory = 0, groundAt = null, terrainTravel = 0, settle = 0;
     fly.rotation.set(0, 0, 0); fly.position.set(0, .837 + .96 * FLY_SCALE, 0);
     if (frame.id === 'unplugged') {
       fly.rotation.z = -.03 * ease((local - 2.6) / 2);
-      if (local < 6) {
-        // Hold the unmistakable compound eyes front-on before any establishing shot.
-        shot = 'face'; cameraAt.set(lerp(1.37, 1.53, ease(local / 6)), 1.64, .08); target.set(.31, 1.4, 0);
-      } else if (local < 7.8) {
-        shot = 'bandage'; cameraAt.set(1.26, 1.46, 1.12); target.set(.34, 1.14, .31);
-      } else {
-        shot = 'observation'; cameraAt.set(3.25, 2.52, 3.7); target.set(-.1, 1.1, 0);
-      }
     } else if (frame.id === 'walking') {
-      const advance = local < 4 ? local * .13 : local < 7 ? .52 : .52 + (local - 7) * .19;
-      fly.position.set(-1.03 + advance, .96 * FLY_SCALE + .03 - frame.stumble * .13, 0);
-      fly.rotation.x = frame.stumble * .24; fly.rotation.z = -frame.stumble * .22;
-      gait = local < 4 ? 4.2 : local < 7 ? 1.4 : 5.5; stride = .15; rail = true;
-      if (local < 3.6) {
-        shot = 'rails-front'; cameraAt.set(fly.position.x + 2.65, 1.43, 1.9); target.set(fly.position.x, .49, 0);
-      } else if (local < 8) {
-        shot = 'stumble'; cameraAt.set(fly.position.x + 1.55, 1.13, 1.95); target.set(fly.position.x + .05, .48, .08);
-      } else {
-        shot = 'first-steps'; cameraAt.set(2.85, 1.93, 3.6); target.set(.05, .49, 0);
-      }
+      const walk = walkingMotion(local);
+      fly.position.set(-1.03 + walk.distance, .96 * FLY_SCALE + .03 - frame.stumble * .11, 0);
+      fly.rotation.x = frame.stumble * .19; fly.rotation.z = -frame.stumble * .17;
+      gait = walk.cadence; phase = walk.phase; stride = .18; rail = true;
     } else if (frame.id === 'treadmill') {
-      fly.position.set(-.1 + Math.sin(local * 2) * .024, .257 + .96 * FLY_SCALE, 0);
+      phase = treadmillMotion(local).phase;
+      fly.position.set(-.1 + Math.sin(local * 1.3) * .012, .257 + .96 * FLY_SCALE, 0);
       gait = lerp(5, 15, ease(local / 10)); stride = lerp(.13, .27, ease(local / 10));
-      fly.rotation.z = .025 + Math.sin(local * gait) * .008;
-      if (local < 3.5) {
-        shot = 'treadmill-wide'; cameraAt.set(3.1, 2.1, 3.7); target.set(.12, .6, 0);
-      } else if (local < 6.5) {
-        shot = 'treadmill-feet'; cameraAt.set(.9, 1.05, 1.7); target.set(.13, .5, .17);
-      } else {
-        shot = 'treadmill-stride'; cameraAt.set(.45, 1.4, 3.4); target.set(.07, .72, 0);
-      }
+      fly.rotation.z = .025 + Math.sin(phase * 2) * .006;
     } else if (frame.id === 'stairs') {
       const travel = ease(local / frame.duration), x = lerp(-1.1, summitX + .85, travel);
       const slope = STEPS.rise / STEPS.tread;
       fly.position.set(x, clamp(x + .18, 0, summitX) * slope + .96 * FLY_SCALE + .025, 0);
       fly.rotation.z = Math.atan(slope) * ease((x + .6) / .6) * (1 - ease((x - summitX + .25) / 1));
-      gait = 12; stride = .23; groundAt = stairHeight;
-      if (local < 3.4) {
-        shot = 'staircase'; cameraAt.set(-6.5, 5, 10.5); target.set(3.5, 2.4, 0);
-      } else if (local < 8) {
-        shot = 'climb-side'; cameraAt.set(x - .35, fly.position.y + 1.05, 3.6); target.copy(fly.position).add(new THREE.Vector3(.1, .05, 0));
-      } else if (local < 11.1) {
-        shot = 'climb-front'; cameraAt.set(x + 2.1, fly.position.y + 1.15, .65); target.copy(fly.position).add(new THREE.Vector3(.16, .09, 0));
-      } else if (local < 14.5) {
-        shot = 'climb-overhead'; cameraAt.set(x - 1.35, fly.position.y + 5.6, 2.15); target.copy(fly.position);
-      } else {
-        shot = 'summit-approach'; cameraAt.set(summitX + 3.9, summitY + 2.55, 4.1); target.set(x, fly.position.y, 0);
-      }
+      gait = 12; terrainTravel = x + 1.1; phase = terrainTravel / (STEPS.tread * 2) * Math.PI * 2;
+      stride = .23; groundAt = stairHeight; settle = smoother((local - 16.3) / 1.7);
     } else {
       fly.position.set(summitX + .85, summitY + .96 * FLY_SCALE + .025, 0);
       victory = ease((local - 1.5) / 2);
       fly.rotation.z = -.035 * victory;
-      const angle = lerp(.58, 0, ease(local / 10));
-      const distance = lerp(3.3, 4.4, ease(local / 10));
-      shot = 'victory'; cameraAt.set(fly.position.x + Math.cos(angle) * distance, fly.position.y + lerp(1.1, 3.4, ease(local / 10)), Math.sin(angle) * distance);
-      target.copy(fly.position).add(new THREE.Vector3(.03, .15, 0));
     }
+    // Frame the stable root position, not each small motor-driven body movement.
+    const planned = recoveryCamera(frame, fly.position.toArray()), shot = planned.shot;
+    cameraAt.set(...planned.position); target.set(...planned.target);
     fly.position.y += (Math.sin(time * 2) * .005 + neural.motor * Math.sin(time * 8) * .008) * (1 - frame.stumble);
-    specimen.pose({ time: reduced ? 0 : time, gait: reduced ? 0 : gait, stride, rail, stumble: frame.stumble, victory, motor: neural.motor, turn: neural.turn, groundAt });
+    specimen.pose({ time: reduced ? 0 : time, gait: reduced ? 0 : gait, phase: reduced ? 0 : phase, terrainTravel, settle, stride, rail, stumble: frame.stumble, victory, motor: neural.motor, turn: neural.turn, groundAt });
     world.animate(frame, specimen.socket());
     const outside = frame.id === 'stairs' || frame.id === 'victory';
     scene.background.set(outside ? 0xecdcb9 : 0xd9e4d8); scene.fog.color.copy(scene.background);
     sun.color.set(outside ? 0xffc88d : 0xffe3b5);
     sun.position.set(fly.position.x + 1, fly.position.y + 7, 5); sun.target.position.copy(fly.position);
-    if (shot !== currentShot) { currentShot = shot; orbitX = orbitY = 0; }
-    camera.fov = shot === 'staircase' ? 44 : 40;
-    camera.setViewOffset(width, height, shot !== 'staircase' && width > 700 ? width * .14 : 0, height * (shot === 'staircase' ? .04 : .10), width, height);
+    camera.fov = 40;
+    // Compose the specimen above and to the left of its persistent telemetry.
+    camera.setViewOffset(width, height, width > 700 ? width * .10 : 0, height * .10, width, height);
     camera.updateProjectionMatrix();
     const offset = cameraAt.clone().sub(target);
     const spherical = new THREE.Spherical().setFromVector3(offset);
     spherical.theta += orbitX; spherical.phi = clamp(spherical.phi + orbitY, .12, Math.PI * .9);
-    // Leave room for the overlay and retain the close-up on portrait windows.
     spherical.radius *= Math.max(1, .95 / camera.aspect);
-    camera.position.copy(target).add(offset.setFromSpherical(spherical)); camera.lookAt(target);
+    cameraAt.copy(target).add(offset.setFromSpherical(spherical));
+    if (!cameraReady) { smoothCamera.copy(cameraAt); smoothTarget.copy(target); cameraReady = true; }
+    const damping = reduced ? 1 : 1 - Math.exp(-Math.min(dt, .05) / .14);
+    smoothCamera.lerp(cameraAt, damping); smoothTarget.lerp(target, damping);
+    camera.position.copy(smoothCamera); camera.lookAt(smoothTarget);
     renderer.setRenderTarget(null); renderer.render(scene, camera);
+    if (dissolveTime < .55) {
+      dissolveTime += Math.max(0, Math.min(dt, .05));
+      dissolveMaterial.opacity = 1 - smoother(dissolveTime / .55);
+      renderer.autoClear = false;
+      try { renderer.render(dissolveScene, dissolveCamera); } finally { renderer.autoClear = true; }
+    }
     lastFrame = frame;
     return { ...frame, shot };
   }
@@ -138,6 +141,6 @@ export function createRecoveryLab(canvas) {
     },
     orbit(dx, dy) { orbitX -= dx * .005; orbitY -= dy * .003; },
     resetCamera() { orbitX = orbitY = 0; },
-    dispose() { sensorTarget.dispose(); renderer.dispose(); }
+    dispose() { sensorTarget.dispose(); dissolveTexture.dispose(); dissolveQuad.geometry.dispose(); dissolveMaterial.dispose(); renderer.dispose(); }
   };
 }

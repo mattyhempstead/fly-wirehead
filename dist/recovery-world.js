@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { STEPS } from './recovery-timeline.js';
+import { STEPS, smoother, treadmillMotion } from './recovery-timeline.js';
 
 // Metre-scale architecture and conventional human rehabilitation equipment.
 export function createRecoveryWorld(scene) {
@@ -70,7 +70,7 @@ export function createRecoveryWorld(scene) {
   for (const z of [-.68, .68]) {
     box([3.15, .06, .13], [0, .24, z], steel, treadmill);
     rod([1.25, .22, z], [1.37, 1.35, z], .045, steel, treadmill);
-    rod([.05, 1.02, z], [1.37, 1.35, z], .035, dark, treadmill);
+    rod([.65, 1.17, z], [1.37, 1.35, z], .035, dark, treadmill);
   }
   const console = box([.48, .13, 1.2], [1.4, 1.38, 0], dark, treadmill); console.rotation.z = -.2;
   const display = sign('REHAB   /   ACTIVE', .84, .17, [1.38, 1.459, 0], treadmill, '#c4f86a', '#1b302b'); display.rotation.set(-Math.PI / 2, 0, Math.PI / 2);
@@ -109,14 +109,14 @@ export function createRecoveryWorld(scene) {
     setScene(id) { for (const group of new Set(Object.values(groups))) group.visible = group === groups[id]; },
     animate(frame, socket) {
       if (frame.id === 'unplugged') {
-        const lift = Math.max(0, Math.min(1, (frame.local - 2.6) / 1.6));
+        const lift = smoother((frame.local - 2.6) / 1.6);
         plug.position.copy(socket).add(new THREE.Vector3(-lift * .18, .06 + lift * .55, -lift * .12));
         plug.rotation.z = lift * .2;
         const end = plug.position.clone().add(new THREE.Vector3(0, .105, 0));
         const curve = new THREE.CatmullRomCurve3([new THREE.Vector3(.1, 2.55, -.1), new THREE.Vector3(.18, 2.25, -.08), end.clone().add(new THREE.Vector3(.04, .2, 0)), end]);
         cable.geometry.dispose(); cable.geometry = new THREE.TubeGeometry(curve, 24, .013, 6);
       }
-      const belt = frame.local * (.4 + Math.min(1, frame.local / 12) * .8);
+      const belt = treadmillMotion(frame.local).belt;
       stripes.forEach((stripe, i) => { stripe.position.x = 1.23 - ((i * .145 + belt) % 2.7); });
     }
   };

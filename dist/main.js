@@ -31,8 +31,8 @@ const client = new BrainClient({
   }
 });
 function showMessage(text) {
-  clearTimeout(messageTimer); $('#scene-message').textContent = text; $('#scene-message').classList.add('visible');
-  messageTimer = setTimeout(() => $('#scene-message').classList.remove('visible'), 2500);
+  clearTimeout(messageTimer); $('#scene-message').textContent = text;
+  messageTimer = setTimeout(() => $('#scene-message').textContent = '', 3500);
 }
 async function command(action) {
   if (commandPending) return false;
@@ -59,17 +59,9 @@ function updateLabels() {
   $('#dopamine-value').textContent = Number.isFinite(t?.pam11_hz) ? t.pam11_hz.toFixed(1) : '—';
   $('#spike-value').textContent = t ? t.total_spikes.toLocaleString() : '—';
   $('#sample-label').textContent = t ? `in ${t.interval_ms} ms of neural time` : 'Waiting for a sample';
-  const seconds = Math.floor(Math.min(state.time, DURATION));
-  $('#session-time').textContent = `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`;
-  $('#top-state').textContent = `BRAIN ${connection}`;
-  $('#model-detail').textContent = ready ? `${status.model.neurons.toLocaleString()} neurons · live visual input` : connectionError || status?.message || 'Loading the local connectome…';
-  $('#stage-number').textContent = `${String(current.index + 1).padStart(2, '0')} / 05`;
-  $('#stage-title').textContent = current.title;
-  $('#drive-state').textContent = !ready ? 'CONNECTING' : status.stimulation_attached ? 'STIMULATION ATTACHED' : 'STIMULATION OFF';
-  document.querySelectorAll('.stage-tick').forEach((tick, i) => tick.classList.toggle('active', i <= current.index));
   $('#play-sequence').disabled = !ready || sceneFailed || commandPending;
   $('#play-sequence').setAttribute('aria-busy', String(commandPending));
-  $('#engine-message').textContent = sceneFailed ? 'Visual input suspended' : status?.paused ? 'Simulation paused · Space to resume' : ready ? '' : connectionError || '';
+  $('#engine-message').textContent = sceneFailed ? 'Visual input suspended' : status?.paused ? 'Simulation paused · Space to resume' : ready ? '' : connectionError || status?.message || 'Loading the local connectome…';
   document.body.classList.toggle('paused', Boolean(status?.paused));
   document.body.classList.toggle('disconnected', !ready);
 }

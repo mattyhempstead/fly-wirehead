@@ -25,15 +25,6 @@
     <section class="observation" aria-label="Live fly observation chamber">
       <div class="scene-wrap" id="scene-wrap">
         <canvas id="scene" tabindex="0" aria-label="Live 3D fly recovery simulation. Drag to orbit. Space pauses; arrow keys change scenes; R replays; C resets the camera; F enters fullscreen."></canvas>
-        <div class="scene-shade" aria-hidden="true"></div>
-        <div class="scene-heading">
-          <div class="brain-status"><span class="live-dot"></span><span id="top-state">BRAIN CONNECTING</span></div>
-          <p id="model-detail">Loading the local connectome…</p>
-        </div>
-        <div class="session-stamp"><span id="drive-state">CONNECTING</span><strong id="session-time">00:00</strong></div>
-        <div class="recovery-stage"><div class="stage-kicker">RECOVERY <span id="stage-number">01 / 05</span></div><h2 id="stage-title">Unplugged</h2><div class="stage-track" aria-hidden="true"><i class="stage-tick active"></i><i class="stage-tick"></i><i class="stage-tick"></i><i class="stage-tick"></i><i class="stage-tick"></i></div></div>
-        <div class="scene-error" id="scene-error" role="alert" hidden>Your browser couldn’t start the 3D scene. Try a browser with WebGL enabled.</div>
-        <div class="scene-message" id="scene-message" role="status"></div>
         <aside class="neural-overlay" aria-label="Measured neural activity">
           <div class="overlay-heading"><span>LIVE NEURAL ACTIVITY</span><span class="live-dot"></span></div>
           <div class="neural-metrics">
@@ -44,12 +35,16 @@
             <div class="plot dopamine-plot"><div class="plot-label"><span>PAM11 FIRING RATE</span><span id="dopamine-range">WAITING FOR DATA</span></div><canvas id="dopamine-chart" role="img" aria-label="Measured firing rate of PAM11 dopamine neurons in Hz; automatically scaled, with axis bounds shown"></canvas></div>
           </div>
         </aside>
-        <div class="scene-status" id="engine-message" role="status"></div>
       </div>
     </section>
     <div class="sequence-controls">
       <button id="play-sequence" type="button" disabled><span aria-hidden="true">▶</span> Play full sequence</button>
       <span>From the beginning · 5 scenes · 64 seconds</span>
+    </div>
+    <div class="sequence-feedback">
+      <p id="engine-message" role="status"></p>
+      <p id="scene-message" role="status"></p>
+      <p id="scene-error" role="alert" hidden>Your browser couldn’t start the 3D scene. Try a browser with WebGL enabled.</p>
     </div>
     <footer>
       <p>MaleCNS v1.0 · Real wiring, approximate dynamics.<br><span>Live eye-view input. Choreographed gait with measured motor responses.</span></p>

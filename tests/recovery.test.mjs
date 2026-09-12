@@ -2,6 +2,60 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { recoveryFrame, DURATION, SCENES, UNPLUG_AT, solveLeg, stairHeight, STEPS } from '../dist/recovery-timeline.js';
 import { BrainClient } from '../dist/backend.js';
+import { walkingMotion, treadmillMotion, terrainFoot } from '../dist/recovery-timeline.js';
+import { recoveryCamera } from '../dist/recovery-camera.js';
+
+test('changing cadence advances phase continuously at the intended rate', () => {
+  const dt = .00001;
+  for (let time = 0; time < 14; time += .01) {
+    const now = walkingMotion(time), next = walkingMotion(time + dt);
+    assert.ok(Math.abs((next.phase - now.phase) / dt - now.cadence) < .0001);
+    assert.ok(next.distance >= now.distance - 1e-10);
+    assert.ok(next.distance - now.distance < .2 * dt);
+  }
+  for (let time = 0; time < 12; time += .01) {
+    const now = treadmillMotion(time), next = treadmillMotion(time + dt);
+    assert.ok(next.phase > now.phase && next.phase - now.phase <= 15.001 * dt);
+    assert.ok(next.belt > now.belt && next.belt - now.belt <= 1.201 * dt);
+  }
+});
+test('terrain footfalls cross stair edges in the air and stay planted during stance', () => {
+  const step = STEPS.tread * 2;
+  for (const offset of [0, .5, 1]) {
+    let previous;
+    for (let travel = 0; travel < 13.5; travel += .001) {
+      const foot = terrainFoot(travel, offset, -.6584, stairHeight);
+      assert.ok(foot.every(Number.isFinite));
+      if (previous) assert.ok(Math.hypot(...foot.map((n, i) => n - previous[i])) < .01);
+      previous = foot;
+    }
+    for (let cycle = 1; cycle < 20; cycle++) {
+      const a = terrainFoot((cycle + .5 - offset) * step, offset, -.6584, stairHeight);
+      const b = terrainFoot((cycle + .9 - offset) * step, offset, -.6584, stairHeight);
+      assert.deepEqual(a, b);
+      assert.ok(Math.abs(a[1] - stairHeight(a[0])) < 1e-12);
+    }
+  }
+});
+test('camera moves have no internal cuts and the summit flows into victory', () => {
+  for (const scene of SCENES) {
+    let previous;
+    for (let local = 0; local < scene.duration; local += .01) {
+      const current = recoveryCamera({ ...scene, local }, [local * .1, .7, 0]);
+      assert.ok([...current.position, ...current.target].every(Number.isFinite));
+      if (previous) {
+        assert.ok(Math.hypot(...current.position.map((n, i) => n - previous.position[i])) < .12);
+        assert.ok(Math.hypot(...current.target.map((n, i) => n - previous.target[i])) < .05);
+      }
+      previous = current;
+    }
+  }
+  const position = [12.37, 6.6058, 0];
+  const before = recoveryCamera({ ...SCENES[3], local: 18 }, position);
+  const after = recoveryCamera({ ...SCENES[4], local: 0 }, position);
+  assert.deepEqual(before.target, after.target);
+  assert.ok(Math.hypot(...before.position.map((n, i) => n - after.position[i])) < 1e-10);
+});
 
 test('the five scenes cut in order, unplug once, and hold the final victory', () => {
   assert.deepEqual(SCENES.map(s => s.id), ['unplugged', 'walking', 'treadmill', 'stairs', 'victory']);

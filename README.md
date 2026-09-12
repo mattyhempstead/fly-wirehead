@@ -10,13 +10,13 @@ A small white wrap stays around the front right leg's joint—the leg that used 
 
 | Time | Scene |
 | --- | --- |
-| 0–10 s | **Unplugged.** Six seconds facing the fly's compound eyes, the cable lifting free, a bandage insert, then the observation room. |
+| 0–10 s | **Unplugged.** A front close-up of the compound eyes as the cable lifts free, followed by a gradual pullback that reveals the wrapped leg and observation room. |
 | 10–24 s | **Learning to walk.** Parallel rails, hesitant steps, a buckling front leg and a near-fall, then another attempt. |
-| 24–36 s | **Treadmill.** A regular treadmill, close-ups of the wrapped leg, and a progressively quicker gait. |
-| 36–54 s | **The climb.** A full outdoor staircase, side tracking, a front view, and an overhead cut. |
+| 24–36 s | **Treadmill.** A slow camera arc around a regular treadmill and a progressively quicker gait. |
+| 36–54 s | **The climb.** A full outdoor staircase, a gradual move into side tracking, then an arc toward the summit. |
 | 54–64 s | **Victory.** Catching its breath, raising both front legs, and a camera arc above the upper landing. |
 
-The final pose holds. The dopamine overlay stays visible through every cut. The sequence is a 3D simulation with choreographed rehabilitation and measured motor modulation, not a video or a claim that the network learned to walk.
+The final pose holds. Wider camera framing, continuous tracking, and brief dissolves connect the scenes; the climb flows directly into victory. Only the live neural activity panel sits over the scene. The sequence is a 3D simulation with choreographed rehabilitation and measured motor modulation, not a video or a claim that the network learned to walk.
 
 ## Run locally
 
@@ -55,7 +55,7 @@ The numerical wiring is reconstructed; the physiology, visual projection, and pl
 | C / F | Reset the camera / fullscreen |
 | S | Save the brain |
 
-The **Play full sequence** button below the simulation starts all five scenes from the beginning, resuming if paused. It remains available to replay after the final scene. Camera cuts restore the planned framing. Reduced-motion preferences start the simulation paused and omit the cyclic gait; hidden tabs stop the presentation clock and new neural observations.
+The **Play full sequence** button below the simulation starts all five scenes from the beginning, resuming if paused. It remains available to replay after the final scene. Scene changes restore the planned framing. Status and error messages appear below the view. Reduced-motion preferences start the simulation paused and omit the cyclic gait and dissolves; hidden tabs stop the presentation clock and new neural observations.
 
 Checkpoints save periodically and on **Ctrl-C**. Measurements, input/spike hashes, and the latest eye-view image are stored under `runs/recovery`. Data, checkpoints, and local run logs are ignored by Git.
 

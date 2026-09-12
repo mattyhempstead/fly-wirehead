@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { solveLeg } from './recovery-timeline.js';
+import { solveLeg, terrainFoot, ease, lerp, FLY_SCALE } from './recovery-timeline.js';
 const C = { lime: 0xc4f86a };
 const seed = n => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
 const vec = p => new THREE.Vector3(...p);
@@ -87,26 +87,33 @@ export function createRecoveryFly() {
   }
   box([.095, .064, .01], [.018, 0, .083], material(0xe0dccf, { roughness: 1 }), wrap);
   const tmp = new THREE.Vector3();
+  let wingPhase = 0, lastPoseTime = null;
   return {
     root, fly, head, limbs,
     socket(target = new THREE.Vector3()) { return head.localToWorld(target.set(0, .47, 0)); },
     eyes(target = new THREE.Vector3()) { return head.localToWorld(target.set(.49, .16, 0)); },
-    pose({ time, gait = 0, stride = .18, rail = false, stumble = 0, victory = 0, motor = 0, turn = 0, groundAt = null }) {
+    pose({ time, gait = 0, phase = 0, terrainTravel = 0, settle = 0, stride = .18, rail = false, stumble = 0, victory = 0, motor = 0, turn = 0, groundAt = null }) {
       root.updateMatrixWorld(true);
+      const elapsed = lastPoseTime === null ? 0 : Math.max(0, Math.min(.05, time - lastPoseTime));
+      wingPhase = (wingPhase + elapsed * (19 + motor * 15)) % (Math.PI * 2);
+      lastPoseTime = time;
       for (const limb of limbs) {
         const { side, index, rest } = limb;
-        const phase = time * gait + (index % 2 ? Math.PI : 0) + (side === 1 ? Math.PI : 0);
+        const phaseOffset = (index % 2 ? .5 : 0) + (side === 1 ? .5 : 0);
+        const cycle = (phase / (Math.PI * 2) + phaseOffset) % 1;
+        const swing = Math.min(1, cycle / .42);
         let ankle = [...rest[2]];
-        ankle[0] += Math.cos(phase) * stride * (gait > 0 ? 1 : 0);
-        ankle[1] += Math.max(0, Math.sin(phase)) * .28 * (gait > 0 ? 1 : 0);
+        ankle[0] += (cycle < .42 ? lerp(-stride, stride, ease(swing)) : lerp(stride, -stride, (cycle - .42) / .58)) * (gait > 0 ? 1 : 0);
+        ankle[1] += Math.sin(Math.PI * swing) ** 2 * .24 * (gait > 0 ? 1 : 0);
         if (groundAt && !(index === 0 && (rail || victory > 0))) {
-          tmp.set(...ankle); fly.localToWorld(tmp);
-          const lift = Math.max(0, Math.sin(phase)) * .11;
-          tmp.y = groundAt(tmp.x) + .025 + lift;
+          tmp.set(...rest[2]); fly.localToWorld(tmp);
+          const [x, y] = terrainFoot(terrainTravel, phaseOffset, -1.1 + rest[2][0] * FLY_SCALE, groundAt);
+          const standingY = groundAt(tmp.x);
+          tmp.x = lerp(x, tmp.x, settle); tmp.y = lerp(y, standingY, settle) + .025;
           ankle = fly.worldToLocal(tmp).toArray();
         }
         if (index === 0 && rail) {
-          ankle = [1.02 + Math.cos(phase) * stride * .3, .65, side * 1.02];
+          ankle = [1.02 + Math.cos(phase + phaseOffset * Math.PI * 2) * stride * .3, .65, side * 1.02];
           if (side === 1) { ankle[1] -= stumble * .75; ankle[0] += stumble * .15; }
         } else if (side === 1 && index === 0) {
           ankle[1] -= stumble * .3;
@@ -128,7 +135,7 @@ export function createRecoveryFly() {
       }
       head.rotation.y = turn * .13 + Math.sin(time * .9) * .022;
       head.rotation.z = -stumble * .2 + Math.sin(time * 1.8) * .015;
-      wings.forEach((wing, i) => { wing.rotation.x = (i ? 1 : -1) * (Math.sin(time * (19 + motor * 15)) * (.012 + motor * .13) + victory * .1); });
+      wings.forEach((wing, i) => { wing.rotation.x = (i ? 1 : -1) * (Math.sin(wingPhase) * (.012 + motor * .13) + victory * .1); });
       // Subtle facet movement suggests blinking without replacing compound eyes.
       const blink = Math.pow(Math.max(0, Math.cos(time * 1.3)), 45);
       eyes.forEach(eye => { eye.scale.y = .37 * (1 - blink * .09); });
