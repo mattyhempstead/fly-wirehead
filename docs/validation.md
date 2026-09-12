@@ -96,3 +96,9 @@ The choreography is now 18 seconds played at **1.5×**, completing in **12 secon
 The fly stands and steps on its hind pair. Its middle pair folds at the waist, and the front pair grips the rails, pumps during running, and raises in victory. The head counter-rotates toward the direction of travel and the wings tilt clear of the floor; the existing joint wrap follows the right arm. Browser inspection checked the upright rail and treadmill poses, both raised arms in victory, and the updated duration label. The full replay reached victory at 12 seconds with 1.5× playback, live measured neural activity, and no console errors or warnings.
 
 All **38 JavaScript checks** passed. New checks cover alternating foot support without an airborne gap, foot-target continuity, 12-second playback at 1.5×, pause, and preservation of measured rates. Backend neural integration and telemetry were unchanged.
+
+## Running-arm cleanup — 2026-09-12
+
+Running arms now rotate forward and back from their shoulders with a steady elbow bend, opposite the same-side foot. This replaces the short hand targets that caused the generic leg IK to push the elbows sideways. Wrists follow their forearms, the middle pair folds close to the torso, and the bandage aligns with the upper arm. Arm movement settles before the victory raise. The 1.5× playback rate and 12-second montage are unchanged.
+
+All **40 JavaScript checks** passed. The two new checks sweep complete strides and the victory transition, verifying fixed shoulders, preserved segment lengths, restrained lateral movement, bent elbows, aligned wrists, opposing swings, and continuity. The updated treadmill pose was checked in the local browser.

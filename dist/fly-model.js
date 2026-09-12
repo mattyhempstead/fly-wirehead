@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { solveLeg, terrainFoot, bipedFoot, ease, lerp, FLY_SCALE } from './recovery-timeline.js';
+import { runningArmPose, tuckedArmPose } from './recovery-arms.js';
 const C = { lime: 0xc4f86a };
 const seed = n => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
 const vec = p => new THREE.Vector3(...p);
@@ -145,7 +146,7 @@ export function createRecoveryFly() {
           }
           ankle = fly.worldToLocal(tmp).toArray();
         }
-        const pose = solveLeg(rest, ankle);
+        let pose = solveLeg(rest, ankle);
         if (biped) {
           const toeLength = Math.hypot(...rest[3].map((n, i) => n - rest[2][i]));
           const direction = new THREE.Vector3(...(index === 2 ? [1, 0, 0] : [.3, .8, side * .1]));
@@ -158,9 +159,16 @@ export function createRecoveryFly() {
           const scale = Math.hypot(...original) / Math.hypot(...toe);
           pose[3] = pose[2].map((n, i) => n + toe[i] * scale);
         }
+        if (biped && (index === 1 || (index === 0 && !rail))) {
+          const worldRest = rest.map(point => fly.localToWorld(vec(point)).toArray());
+          const worldPose = index === 1 ? tuckedArmPose(worldRest, side)
+            : runningArmPose(worldRest, phase, side, gait > 0 ? 1 - settle : 0, victory);
+          pose = worldPose.map(point => fly.worldToLocal(vec(point)).toArray());
+        }
         poseBone(limb.upper, pose[0], pose[1]); limb.joint.position.set(...pose[1]);
         poseBone(limb.lower, pose[1], pose[2]); poseBone(limb.foot, pose[2], pose[3]);
       }
+      wrap.quaternion.copy(right.upper.quaternion);
       head.rotation.y = turn * .13 + Math.sin(time * .9) * .022;
       head.rotation.z = (biped ? -root.rotation.z * .7 : 0) - stumble * .12 + Math.sin(time * 1.8) * .015;
       wings.forEach((wing, i) => {
