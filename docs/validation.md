@@ -203,3 +203,9 @@ All **59 JavaScript checks** passed. New coverage verifies the polygon budget, o
 Increased the spacing of the 100-room blocks from 750 to 830 units, widening the roads between their 734-unit plinths from 16 to 96 units. The final camera span increases to 8,800 to frame the expanded grid; room spacing within each block remains 70 units.
 
 All eight layout and reveal checks passed, including continuous camera motion, early geometry submission, and complete campus framing across viewport shapes. Browser inspection confirmed the wider block gaps, 10,000 rendered rooms, seven draw calls, and no console errors or warnings. The preview was left paused in the All blocks view.
+
+## Remove spare lines behind the central grid — 2026-09-13
+
+Removed the rear wall's thin segmented light strips and vertical ribs. Moved the horizontal wiring collector from the former machinery bay to the last station row, shortening the eight supply runs so they no longer extend across the empty space behind the flies. The continuous green wall-top trim and fly head connections remain.
+
+The scene module passed its syntax check and the diff passed whitespace checks. Restarted the stopped local server, then verified the cleared rear area in the browser with no console errors or warnings. The preview was left paused in the Factory floor view, with the shared brain connected.

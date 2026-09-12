@@ -76,12 +76,13 @@ export function createMatrix(canvas, feed) {
   const floorMesh = new THREE.Mesh(bake(floor), new THREE.MeshLambertMaterial({ vertexColors: true, fog: false }));
   floorMesh.receiveShadow = true; room.add(floorMesh);
   const factory = new THREE.Group(), f = builders(factory);
-  const supplyBack = -26.72, supplyFront = (ROWS - 1) / 2 * PITCH_Z + .7;
+  const supplyBack = -(ROWS - 1) / 2 * PITCH_Z, supplyFront = (ROWS - 1) / 2 * PITCH_Z + .7;
   for (let column = 0; column < COLUMNS; column++) {
     const x = (column - (COLUMNS - 1) / 2) * PITCH_X + socketX;
     f.rod([x, wireHeight, supplyBack], [x, wireHeight, supplyFront], .028, 0x536c57);
   }
-  // The collector stays in the same horizontal plane, at the rear of the room.
+  // Keep the collector over the last row, without spare wiring in the old
+  // machinery bay between the stations and the rear wall.
   const supplyHalfWidth = (COLUMNS - 1) / 2 * PITCH_X + .7;
   f.rod([socketX - supplyHalfWidth, wireHeight, supplyBack], [socketX + supplyHalfWidth, wireHeight, supplyBack], .042, 0x536c57);
   // Clear circulation lanes and safety paint make the regular grid read as a factory.
@@ -100,10 +101,6 @@ export function createMatrix(canvas, feed) {
   const wallY = ROOM_WALL_HEIGHT / 2 - .25;
   f.box([61, ROOM_WALL_HEIGHT, .28], [0, wallY, -30.4], 0x0a160e);
   f.box([.28, ROOM_WALL_HEIGHT, 62], [30.6, wallY, 0], 0x0a160e);
-  for (let x = -28; x <= 28; x += 7) {
-    f.box([.18, ROOM_WALL_HEIGHT, .4], [x, wallY, -30.1], 0x1c3123);
-    f.box([4.5, .13, .035], [x, ROOM_WALL_HEIGHT - 1.3, -29.92], 0x627c59);
-  }
   const environment = new THREE.Mesh(bake(factory), solid); environment.receiveShadow = true; room.add(environment);
   // Match the continuous wall-top trim on the distant room shells, including
   // their unlit material so the original room keeps the same green outline.
