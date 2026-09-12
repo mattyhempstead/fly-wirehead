@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import { bake, builders } from './matrix-geometry.js';
 import { random } from './matrix-timeline.js';
-import { ROOM_WALL_HEIGHT } from './matrix-scale.js';
 
 // Environmental animation only; it never enters the phones or neural input.
 export function createAtmosphere(scene, stations, { socketX, wireHeight }) {
@@ -72,33 +71,7 @@ export function createAtmosphere(scene, stations, { socketX, wireHeight }) {
     return { sprite, x: sprite.position.x, z: sprite.position.z, phase: random(i + 925) * 6 };
   });
 
-  const codeCanvas = document.createElement('canvas'); codeCanvas.width = 1024; codeCanvas.height = 512;
-  const codeContext = codeCanvas.getContext('2d');
-  const codeTexture = new THREE.CanvasTexture(codeCanvas); codeTexture.colorSpace = THREE.SRGBColorSpace;
-  codeTexture.generateMipmaps = false; codeTexture.minFilter = THREE.LinearFilter;
-  const codeMaterial = new THREE.MeshBasicMaterial({ map: codeTexture, transparent: true, opacity: .95, toneMapped: false, depthWrite: false, fog: false });
-  const codeHeight = ROOM_WALL_HEIGHT - .6, codeY = ROOM_WALL_HEIGHT / 2 - .05;
-  const codeWall = new THREE.Mesh(new THREE.PlaneGeometry(59, codeHeight), codeMaterial); codeWall.position.set(0, codeY, -30.20); scene.add(codeWall);
-  const codeSide = new THREE.Mesh(new THREE.PlaneGeometry(54, codeHeight), codeMaterial); codeSide.position.set(30.38, codeY, -2); codeSide.rotation.y = -Math.PI / 2; scene.add(codeSide);
-  const glyphs = '0123456789アイウエオカキクケコサシスセソタチツテトナニヌネノ+-:<>';
-  const streams = Array.from({ length: 80 }, (_, i) => ({ x: i * 13, offset: random(i + 200) * 700, speed: 14 + random(i + 220) * 25, length: 7 + Math.floor(random(i + 240) * 17) }));
-  let lastCode = -1;
   function animate(time) {
-    const tick = Math.floor(time * 10);
-    if (tick !== lastCode) {
-      lastCode = tick; codeContext.clearRect(0, 0, 1024, 512);
-      codeContext.font = 'bold 13px monospace'; codeContext.textAlign = 'center';
-      for (let i = 0; i < streams.length; i++) {
-        const stream = streams[i], head = (stream.offset + time * stream.speed) % 830 - 100;
-        for (let j = 0; j < stream.length; j++) {
-          const y = head - j * 14;
-          if (y < 0 || y > 528) continue;
-          codeContext.fillStyle = j === 0 ? 'rgba(209,255,190,1)' : `rgba(107,239,110,${.78 * (1 - j / stream.length)})`;
-          codeContext.fillText(glyphs[Math.floor(random(i * 719 + j * 13 + Math.floor(tick / 8)) * glyphs.length)], stream.x, y);
-        }
-      }
-      codeTexture.needsUpdate = true;
-    }
     for (const cloud of mist) {
       cloud.sprite.position.x = cloud.x + Math.sin(time * .09 + cloud.phase) * 1.5;
       cloud.sprite.position.z = cloud.z + Math.cos(time * .06 + cloud.phase) * .6;
@@ -107,5 +80,5 @@ export function createAtmosphere(scene, stations, { socketX, wireHeight }) {
     emission.color.setRGB(.46 + Math.sin(time * .42) * .025, .85, .34 + Math.sin(time * .31) * .018, THREE.SRGBColorSpace);
   }
   animate(0);
-  return { animate, dispose() { haloTexture.dispose(); codeTexture.dispose(); } };
+  return { animate, dispose() { haloTexture.dispose(); } };
 }

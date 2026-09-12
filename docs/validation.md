@@ -171,3 +171,7 @@ All **55 JavaScript checks** passed. A new Three.js frustum regression checks ro
 ## Original room wall trim — 2026-09-12
 
 Added the missing continuous green strips along both original room wall tops, matching the distant shells' dimensions, height, color, and unlit, fog-free material. Browser inspection confirmed the complete outline above the original room's machinery, with no console errors or warnings. The edited module passed its syntax check and the diff passed whitespace checks. The preview was left paused, matching its state before the update.
+
+## Remove wall symbols — 2026-09-12
+
+Removed both falling-symbol wall planes, their canvas texture, and the glyph animation loop. The green wall trim, machinery, lighting, and mist remain. Browser inspection confirmed clear walls and connected neural telemetry with no console errors or warnings. The edited module passed its syntax check and the diff passed whitespace checks.
