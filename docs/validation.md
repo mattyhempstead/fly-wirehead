@@ -209,3 +209,9 @@ All eight layout and reveal checks passed, including continuous camera motion, e
 Removed the rear wall's thin segmented light strips and vertical ribs. Moved the horizontal wiring collector from the former machinery bay to the last station row, shortening the eight supply runs so they no longer extend across the empty space behind the flies. The continuous green wall-top trim and fly head connections remain.
 
 The scene module passed its syntax check and the diff passed whitespace checks. Restarted the stopped local server, then verified the cleared rear area in the browser with no console errors or warnings. The preview was left paused in the Factory floor view, with the shared brain connected.
+
+## Match the original room's wall colors — 2026-09-13
+
+Moved the original wall faces out of the metallic environment material into the same unlit, fog-free material as the repeated wall shells. Their dimensions and green colors now match, and random shell tinting is removed. The original walls share the neighbouring rooms' reveal opacity; overhead snapshots temporarily capture the walls at full opacity so the fade is applied only once.
+
+Both edited JavaScript modules passed syntax checks and the diff passed whitespace checks. Browser comparison in the Factory floor view confirmed matching green walls and trim with no console errors or warnings.

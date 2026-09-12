@@ -1,10 +1,10 @@
 import * as THREE from 'three';
 import { bake, builders } from './matrix-geometry.js';
-import { random, stations } from './matrix-timeline.js';
+import { stations } from './matrix-timeline.js';
 import { createLowFlies } from './matrix-low-fly.js';
 import { blocks, rooms, ROOM_COUNT, ROOMS_PER_BLOCK, ROOM_SIZE, ROOM_WALL_HEIGHT, BLOCK_COUNT, BLOCK_SIZE, CAMPUS_SIZE, CAMPUS_CENTER, DETAIL_SPAN, visibleRoomCount, visibleBlockCount, revealOpacity } from './matrix-scale.js';
 
-export function createCampus(scene, room, screens) {
+export function createCampus(scene, room, screens, originalWalls) {
   const root = new THREE.Group(); scene.add(root);
   // One snapshot of the actual room replaces its detailed geometry at distance.
   // Half-float linear color avoids clipping lighting before final tone mapping.
@@ -62,16 +62,13 @@ export function createCampus(scene, room, screens) {
   nearGeometry.renderOrder = nearScreens.renderOrder = 1;
   root.add(nearGeometry, nearScreens);
   const nearFlies = createLowFlies(root, rooms.slice(0, 81));
-  const transform = new THREE.Object3D(), color = new THREE.Color();
+  const transform = new THREE.Object3D();
   for (let i = 0; i < rooms.length; i++) {
     const copy = rooms[i]; transform.position.set(copy.x, 0, copy.z); transform.updateMatrix();
     const local = i < ROOMS_PER_BLOCK, index = local ? i : i - ROOMS_PER_BLOCK;
     const floorBatch = local ? floors : outerFloors, shellBatch = local ? shells : outerShells;
     floorBatch.setMatrixAt(index, transform.matrix); shellBatch.setMatrixAt(index, transform.matrix);
     if (i < 81) { nearGeometry.setMatrixAt(i, transform.matrix); nearScreens.setMatrixAt(i, transform.matrix); }
-    const shade = i === 0 ? 1 : .87 + random(copy.id + 411) * .2;
-    // Keep the captured floor untinted so it matches the live central room.
-    color.setRGB(shade, shade, shade); shellBatch.setColorAt(index, color);
   }
   for (let i = 0; i < blocks.length; i++) {
     const block = blocks[i]; transform.position.set(block.x, 0, block.z); transform.updateMatrix();
@@ -89,17 +86,22 @@ export function createCampus(scene, room, screens) {
     needsCapture(time, detailed) { return !ready || detailed && time - lastCapture >= 2; },
     capture(renderer, time) {
       const oldTarget = renderer.getRenderTarget(), oldFog = scene.fog, oldRoot = root.visible, oldRoom = room.visible;
+      const oldWallOpacity = originalWalls.material.opacity;
       try {
         root.visible = false; room.visible = true; scene.fog = null;
+        // Capture full wall color; each displayed room applies the reveal fade once.
+        originalWalls.material.opacity = 1;
         renderer.setRenderTarget(snapshot); renderer.render(scene, top);
         ready = true; lastCapture = time;
       } finally {
         renderer.setRenderTarget(oldTarget); scene.fog = oldFog; root.visible = oldRoot; room.visible = oldRoom;
+        originalWalls.material.opacity = oldWallOpacity;
       }
     },
     update(span, aspect, orbit, time, motor) {
       detail = span < DETAIL_SPAN || !ready;
       const fade = revealOpacity(span, orbit);
+      originalWalls.material.opacity = fade.rooms;
       room.visible = detail; root.visible = ready;
       for (const mesh of [floors, shells, primaryBlock, foundation]) {
         mesh.visible = fade.rooms > 0;

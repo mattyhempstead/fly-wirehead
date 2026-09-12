@@ -98,16 +98,17 @@ export function createMatrix(canvas, feed) {
     f.box([49, .015, .075], [0, -.02, z], 0x64704a);
     for (let i = -24; i < 25; i += 2) f.box([.9, .018, .22], [i, -.015, z + Math.sign(z) * .35], 0x64704a);
   }
-  const wallY = ROOM_WALL_HEIGHT / 2 - .25;
-  f.box([61, ROOM_WALL_HEIGHT, .28], [0, wallY, -30.4], 0x0a160e);
-  f.box([.28, ROOM_WALL_HEIGHT, 62], [30.6, wallY, 0], 0x0a160e);
   const environment = new THREE.Mesh(bake(factory), solid); environment.receiveShadow = true; room.add(environment);
-  // Match the continuous wall-top trim on the distant room shells, including
-  // their unlit material so the original room keeps the same green outline.
-  const wallTrim = new THREE.Group(), trim = builders(wallTrim), capY = ROOM_WALL_HEIGHT - .14;
-  trim.box([61, .24, .46], [0, capY, -30.4], 0x52794b);
-  trim.box([.46, .24, 62], [30.6, capY, 0], 0x52794b);
-  room.add(new THREE.Mesh(bake(wallTrim), new THREE.MeshBasicMaterial({ vertexColors: true, fog: false })));
+  // Match both wall faces and trim to the unlit, fog-free repeated shells.
+  // The original walls must not darken under the room's metallic lighting.
+  const walls = new THREE.Group(), wall = builders(walls);
+  const wallY = ROOM_WALL_HEIGHT / 2 - .25, capY = ROOM_WALL_HEIGHT - .14;
+  wall.box([61, ROOM_WALL_HEIGHT, .3], [0, wallY, -30.4], 0x112b1a);
+  wall.box([.3, ROOM_WALL_HEIGHT, 62], [30.6, wallY, 0], 0x152e1e);
+  wall.box([61, .24, .46], [0, capY, -30.4], 0x52794b);
+  wall.box([.46, .24, 62], [30.6, capY, 0], 0x52794b);
+  const wallMesh = new THREE.Mesh(bake(walls), new THREE.MeshBasicMaterial({ vertexColors: true, fog: false, transparent: true }));
+  room.add(wallMesh);
   const atmosphere = createAtmosphere(room, stations, { socketX, wireHeight });
 
   // One texture atlas and one mesh for all independently composited screens.
@@ -143,7 +144,7 @@ export function createMatrix(canvas, feed) {
   const body = new THREE.Object3D(), part = new THREE.Object3D(), matrix = new THREE.Matrix4();
   const start = new THREE.Vector3(), end = new THREE.Vector3(), up = new THREE.Vector3(0, 1, 0), socket = new THREE.Vector3();
   const radii = [.034, .022, .013];
-  const campus = createCampus(scene, room, screenMesh);
+  const campus = createCampus(scene, room, screenMesh, wallMesh);
   const wingbeats = stations.map(station => wingbeatProfile(rooms[0].id, station.id));
   let lastTextureVersion = -1, width = 0, height = 0;
   // Saved from the user's chosen angle and pan on central station G5.
