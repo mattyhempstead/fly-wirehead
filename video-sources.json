@@ -1,5 +1,20 @@
 {
-  "description": "The five user-selected YouTube Shorts, in the requested order. Prepared at 360×640 and presented for three seconds each.",
-  "ids": ["HOe8Ur6H8x4", "rUmhjdFVPFo", "lYrSza4cYaE", "db5JqXQekmE", "PBWmPoLjVvA"],
-  "trim_end_seconds": {"PBWmPoLjVvA": 4}
+  "description": "Twelve user-selected YouTube Shorts prepared at 360×640. Every matrix phone loops through its own shuffled order with an independent swipe timer.",
+  "ids": [
+    "HOe8Ur6H8x4",
+    "rUmhjdFVPFo",
+    "lYrSza4cYaE",
+    "db5JqXQekmE",
+    "PBWmPoLjVvA",
+    "bjRGp2Q8-3k",
+    "uj657AteDuc",
+    "sfIc0wA70zc",
+    "i43ZTyYF110",
+    "cJKOjkwXTZw",
+    "oAsh4BuVoPk",
+    "BrYyd6EY6bU"
+  ],
+  "trim_end_seconds": {
+    "PBWmPoLjVvA": 4
+  }
 }

@@ -6,7 +6,9 @@
 
 The `matrix` branch renders 64 flies and 64 phones in an 8 × 8 factory. There is one Python worker and one native connectome, not 64 neural simulations.
 
-`prepare_matrix.py` decodes the five existing prepared MP4s into 144 × 256 frame sheets at 15 fps. Clip duration is bounded by the available decoded frames; the previously trimmed four-second clip cannot reveal later footage. These local WebP sheets are drawn into one 8 × 8 screen atlas. Each station has a deterministic independent timer, clip order, phase, and start offset. The timer advances with visible, unpaused presentation time. Phone slides and foreleg poses share the same 900 ms transition function.
+`prepare_matrix.py` decodes the twelve prepared MP4s into 144 × 256 frame sheets at 15 fps. Clip duration is bounded by the available decoded frames; the previously trimmed four-second clip cannot reveal later footage. These local WebP sheets are drawn into one 8 × 8 screen atlas. Each station has a deterministic independent timer, clip order, phase, and start offset. The timer advances with visible, unpaused presentation time. Phone slides and foreleg poses share the same 900 ms transition function.
+
+Each fly receives a seeded Fisher–Yates shuffle of the complete collection. Duplicate cycles are rejected, including rotations of the same cycle, so the twelve-video collection produces 64 distinct loops. Each loop plays all twelve clips once before repeating; playback offsets and swipe timers remain independent. The seed keeps a fly's order stable across reloads.
 
 The Three.js screen geometry maps each phone to its own atlas tile. Phones face along −X toward flies facing +X. Repeated bodies, wings, benches, swiping limbs, and wires use instancing; the entire screen atlas is rendered as one mesh. Observer camera controls do not affect the sensory image.
 
@@ -44,4 +46,4 @@ Full-network assays in `tests/test_full_connectome.py` validate black/white visu
 
 ## Sources
 
-The backend derives from [nftechie/stonkfly](https://github.com/nftechie/stonkfly), commit `78ef3e05ab0fa086032098558d893667068944a0`, under MIT. See [THIRD_PARTY.md](../THIRD_PARTY.md) for MaleCNS CC BY 4.0 attribution and [flywirehead/upstream.json](../flywirehead/upstream.json) for source hashes. Prepared media metadata retains the five user-selected source links and creators.
+The backend derives from [nftechie/stonkfly](https://github.com/nftechie/stonkfly), commit `78ef3e05ab0fa086032098558d893667068944a0`, under MIT. See [THIRD_PARTY.md](../THIRD_PARTY.md) for MaleCNS CC BY 4.0 attribution and [flywirehead/upstream.json](../flywirehead/upstream.json) for source hashes. Prepared media metadata retains the twelve user-selected source links and creators.

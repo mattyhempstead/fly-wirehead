@@ -1,10 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { stations, STATION_COUNT, stationFrame, bottomUpRGBA } from '../dist/matrix-timeline.js';
+import { stations, STATION_COUNT, stationClipOrder, stationFrame, bottomUpRGBA } from '../dist/matrix-timeline.js';
 import { sampleSwipe, SWIPE_SECONDS } from '../dist/swipe.js';
 import { createPlayback } from '../dist/simulation.js';
 
-const clips = [5.2, 6.9, 4.6, 14.2, 4].map(duration => ({ duration }));
+const clips = [5.2, 6.9, 4.6, 14.2, 4, 8, 5.1, 24.7, 4.6, 27, 6.4, 16.8].map(duration => ({ duration }));
 
 test('all 64 stations have distinct clocks and occupy a complete 8 by 8 grid', () => {
   assert.equal(STATION_COUNT, 64);
@@ -14,10 +14,42 @@ test('all 64 stations have distinct clocks and occupy a complete 8 by 8 grid', (
   assert.equal(new Set(stations.map(s => s.period)).size, 64);
   for (let time = 0; time < 90; time += .25) {
     const frames = stations.map(s => stationFrame(s, time, clips));
-    assert.equal(new Set(frames.map(f => f.current)).size, 5);
+    assert.ok(new Set(frames.map(f => f.current)).size >= 9);
     const swiping = frames.filter(f => f.gesture < 1);
     assert.ok(swiping.length >= 5 && swiping.length < 40);
     assert.ok(new Set(swiping.map(f => f.gesture)).size > 5);
+  }
+});
+
+test('all 64 flies have distinct shuffled loops, even when compared at different starting positions', () => {
+  const loops = stations.map(station => {
+    const order = stationClipOrder(station.id, clips.length);
+    assert.deepEqual([...order].sort((a, b) => a - b), clips.map((_, i) => i));
+    const first = order.indexOf(0);
+    return [...order.slice(first), ...order.slice(0, first)].join(',');
+  });
+  assert.equal(new Set(loops).size, STATION_COUNT);
+});
+
+test('each phone plays every clip once per loop and repeats its own order across the wrap', () => {
+  for (const station of stations) {
+    const order = stationClipOrder(station.id, clips.length);
+    for (let turn = 3; turn < 3 + clips.length * 3; turn++) {
+      const frame = stationFrame(station, turn * station.period - station.offset + .1, clips);
+      assert.equal(frame.current, order[turn % clips.length]);
+      assert.equal(frame.previous, order[(turn - 1) % clips.length]);
+      assert.notEqual(frame.current, frame.previous);
+    }
+    assert.deepEqual(stationClipOrder(station.id, clips.length), order);
+  }
+});
+
+test('small collections still produce complete loops when 64 distinct cycles are impossible', () => {
+  for (const count of [1, 2, 3, 5]) {
+    for (const station of stations) {
+      const order = stationClipOrder(station.id, count);
+      assert.deepEqual([...order].sort((a, b) => a - b), Array.from({ length: count }, (_, i) => i));
+    }
   }
 });
 

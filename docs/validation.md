@@ -87,3 +87,11 @@ The factory now has darker metal surfaces, localized green lighting, bright code
 Corrected the reversed vertical drag and removed delayed camera motion after dragging. Direct input takes over at the displayed pose, including during a preset transition. Drag sensitivity now follows viewport height and decreases with closer framing; preset resets take the shortest angular path and interpolate zoom. Pointer capture handles release, cancellation, lost capture, and secondary touches; wheel input respects pixel, line, and page units.
 
 All **39 JavaScript checks** passed. Seven new checks cover actual Three.js screen projection in both drag axes at five headings, stopping without drift, interrupted presets, viewport/zoom sensitivity, shortest turns, tilt/zoom limits, pointer lifecycle, and wheel units. In the live browser, a diagonal drag and its reverse restored the original factory angles, and the camera remained unchanged after release. A close-up drag at 1.34× zoom moved more gently; rendering held 60 fps with connected neural telemetry and no console warnings or errors. Neural code and feed scheduling were unchanged.
+
+## Twelve Shorts and individual shuffled loops — 2026-09-12
+
+Downloaded all seven additional user-selected Shorts with yt-dlp and prepared them at 360 × 640. The collection now contains twelve clips. Source IDs, hashes, portrait dimensions, and the original four-second trim were verified; all seven additions were visually inspected. The frame cache was rebuilt from the actual footage.
+
+Each station now repeats its own complete shuffled sequence, replacing the previous forward/reverse order with different offsets. All 64 cycles are distinct, including after normalizing their starting positions. All **42 JavaScript checks** passed, including unique permutations, every clip appearing exactly once per cycle, repeating across loop boundaries, and small collections where 64 unique cycles are impossible. Existing playhead, pause, and phone/leg synchronization checks still pass.
+
+The local browser showed all twelve source videos concurrently across 64 phones. A later snapshot showed changed clips on all 64 phones, connected shared neural input, and 60 fps, without console warnings or errors. Neural dynamics are unchanged.

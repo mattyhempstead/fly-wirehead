@@ -20,12 +20,40 @@ export const stations = Array.from({ length: STATION_COUNT }, (_, id) => ({
   phase: random(id + 1001) * Math.PI * 2,
 }));
 
+const orderCache = new Map();
+export function stationClipOrder(stationId, clipCount) {
+  if (!orderCache.has(clipCount)) {
+    const seen = new Set();
+    // Rotating the same sequence is still the same loop. Count distinct cycles,
+    // capped at the number of stations; tiny test collections can share loops.
+    let capacity = 1;
+    for (let n = 2; n < clipCount && capacity < STATION_COUNT; n++) capacity = Math.min(STATION_COUNT, capacity * n);
+    const orders = stations.map(station => {
+      let order, key, attempt = 0;
+      do {
+        order = Array.from({ length: clipCount }, (_, index) => index);
+        const seed = station.id * 92821 + attempt++ * 68917 + 4201;
+        for (let i = clipCount - 1; i > 0; i--) {
+          const j = Math.floor(random(seed + i * 313) * (i + 1));
+          [order[i], order[j]] = [order[j], order[i]];
+        }
+        const first = order.indexOf(0);
+        key = [...order.slice(first), ...order.slice(0, first)].join(',');
+      } while (seen.size < capacity && seen.has(key));
+      seen.add(key);
+      return Object.freeze(order);
+    });
+    orderCache.set(clipCount, orders);
+  }
+  return orderCache.get(clipCount)[stationId];
+}
+
 export function stationFrame(station, time, clips, reducedMotion = false) {
   if (!clips.length) return null;
   const clock = Math.max(0, time) + station.offset;
   const cycle = Math.floor(clock / station.period), local = clock - cycle * station.period;
-  const direction = station.id % 2 ? -1 : 1;
-  const clipIndex = turn => mod(Math.floor(random(station.id + 127) * clips.length) + turn * direction, clips.length);
+  const order = stationClipOrder(station.id, clips.length);
+  const clipIndex = turn => order[mod(turn, clips.length)];
   const current = clipIndex(cycle), previous = clipIndex(cycle - 1);
   const playhead = (index, turn, elapsed) => {
     const room = Math.max(0, clips[index].duration - station.period - .1);

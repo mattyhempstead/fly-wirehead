@@ -10,12 +10,12 @@ This is the `matrix` branch of [Fly / Wirehead](https://github.com/mattyhempstea
 
 - **64 stations:** aligned metal benches, overhead supply lines, station IDs, and a regular 8 × 8 layout. Each fly's back right leg has a metal cuff and linked chain running over the bench edge to a bolted floor anchor.
 - **A containment chamber:** blackened metal, green pools of light, falling code on towering walls, rear machine banks and cable bundles, power columns, drifting floor haze, and subtle surveillance scanlines. Original fly colors and full-color insect footage remain visible against the dark environment.
-- **64 independent feeds:** the five selected insect Shorts play at separate offsets and in varying orders. Swipes occur roughly every 2.6–3.5 seconds, staggered across stations.
+- **64 independent feeds:** each fly has its own unique shuffled loop through all twelve insect Shorts, playing every clip once before repeating. Playback offsets and swipe timers are independent. Swipes occur roughly every 2.6–3.5 seconds, staggered across stations.
 - **Head-on phones:** each portrait screen points directly toward its fly; the phone has no attached machinery.
 - **One shared connectome:** the browser samples the phones in rotation, submitting one display per neural observation. Measured motor activity modulates wing movement across the floor.
 - **Three camera views:** factory floor, along the line, and a single station. Drag to orbit, scroll to zoom, and use the buttons below the view to pause or enter fullscreen.
 
-The demonstration uses five source videos with 64 independent playheads, rather than 64 unique source videos. The fourth-second limit on `PBWmPoLjVvA` is preserved. There is no video audio in this branch.
+The demonstration uses twelve source videos with 64 independent playheads, rather than 64 unique source videos. The fourth-second limit on `PBWmPoLjVvA` is preserved. There is no video audio in this branch.
 
 ## Run locally
 
