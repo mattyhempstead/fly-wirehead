@@ -76,7 +76,8 @@ export function createCampus(scene, room, screens) {
     floorBatch.setMatrixAt(index, transform.matrix); shellBatch.setMatrixAt(index, transform.matrix);
     if (i < 81) { nearGeometry.setMatrixAt(i, transform.matrix); nearScreens.setMatrixAt(i, transform.matrix); }
     const shade = i === 0 ? 1 : .87 + random(copy.id + 411) * .2;
-    color.setRGB(shade, shade, shade); floorBatch.setColorAt(index, color); shellBatch.setColorAt(index, color);
+    // Keep the captured floor untinted so it matches the live central room.
+    color.setRGB(shade, shade, shade); shellBatch.setColorAt(index, color);
   }
   for (let i = 0; i < blocks.length; i++) {
     const block = blocks[i]; transform.position.set(block.x, 0, block.z); transform.updateMatrix();

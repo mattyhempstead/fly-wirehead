@@ -183,3 +183,9 @@ Increased the detailed flies' wingbeat speed by about 1.8× and raised their ang
 ## Remove room machinery — 2026-09-12
 
 Removed the rear computer racks, cylindrical power columns, and their attached lights and cable bundles. The refreshed room snapshots also omit these objects in distant copies. Browser inspection confirmed open room edges, retained flies and phones, green wall trim, and connected neural telemetry with no console errors or warnings. Both edited JavaScript modules passed syntax checks and the diff passed whitespace checks. Restarted the stopped local Python server before verifying the preview.
+
+## Consistent room floor shading — 2026-09-12
+
+Separated the original room's two floor slabs from the metallic environment material. They now use diffuse Lambert shading without camera-depth fog, retaining received shadows while matching the lighting captured in the repeated rooms' overhead texture. Removed random instance tint from the copied floors; wall-shell variation remains.
+
+Both edited JavaScript modules passed syntax checks and the diff passed whitespace checks. The local preview returned HTTP 200. This change was checked in source, without a new browser visual comparison.

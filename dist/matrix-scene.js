@@ -66,9 +66,15 @@ export function createMatrix(canvas, feed) {
   const socketX = FLY_X + SOCKET[0] * FLY_SCALE, wireHeight = 2.85;
   b.rod([socketX, wireHeight, -.065], [socketX, wireHeight, .065], .048, 0x536c57);
   const benches = instances(bake(base), solid); positionCopies(benches);
+  // The live floor and its overhead snapshot need the same diffuse shading.
+  // Specular highlights and camera-depth fog make the original room stand out
+  // from its copies when the camera pulls back or changes angle.
+  const floor = new THREE.Group(), floorBuilder = builders(floor);
+  floorBuilder.box([62, .18, 62], [0, -.13, 0], 0x060d09);
+  floorBuilder.box([64, .26, 64], [0, -.33, 0], 0x050d08);
+  const floorMesh = new THREE.Mesh(bake(floor), new THREE.MeshLambertMaterial({ vertexColors: true, fog: false }));
+  floorMesh.receiveShadow = true; room.add(floorMesh);
   const factory = new THREE.Group(), f = builders(factory);
-  f.box([62, .18, 62], [0, -.13, 0], 0x060d09);
-  f.box([64, .26, 64], [0, -.33, 0], 0x050d08);
   const supplyBack = -26.72, supplyFront = (ROWS - 1) / 2 * PITCH_Z + .7;
   for (let column = 0; column < COLUMNS; column++) {
     const x = (column - (COLUMNS - 1) / 2) * PITCH_X + socketX;
