@@ -4,33 +4,34 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#090b0d" />
-  <meta name="description" content="A local Python/C++ fly-connectome experiment driven by shortform screen pixels, with a 3D observation chamber and measured neural telemetry." />
-  <meta property="og:title" content="FLY / WIREHEAD" />
-  <meta property="og:description" content="One fly. An infinite feed. A deeply unserious experiment in attention." />
-  <title>FLY / WIREHEAD — The attention experiment</title>
+  <meta name="description" content="A fly-connectome simulation in recovery. Five 3D scenes, eye-view visual input, and live measured dopamine-neuron activity." />
+  <meta property="og:title" content="FLY / RECOVERY" />
+  <meta property="og:description" content="Unplugged. One step at a time. A live fly-connectome simulation." />
+  <title>FLY / RECOVERY — One step at a time</title>
   <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="./style.css" />
   <script type="importmap">{"imports":{"three":"./vendor/three.module.js"}}</script>
 </head>
 <body>
   <header class="masthead">
-    <a class="wordmark" href="./" aria-label="Fly Wirehead home"><span class="brand-mark">⌘</span> FLY <span class="slash">/</span> WIREHEAD</a>
-    <span class="header-note">AN EXPERIMENT IN ATTENTION</span>
+    <a class="wordmark" href="./" aria-label="Fly Recovery home"><span class="brand-mark">⌘</span> FLY <span class="slash">/</span> RECOVERY</a>
+    <span class="header-note">A LIVE CONNECTOME EXPERIMENT</span>
   </header>
   <main>
     <div class="intro">
-      <h1>Born to fly. <span>Forced to scroll.</span></h1>
-      <p>A fly connectome. An endless feed.</p>
+      <h1>Born to fly. <span>Learning again.</span></h1>
+      <p>Unplugged. One step at a time.</p>
     </div>
     <section class="observation" aria-label="Live fly observation chamber">
       <div class="scene-wrap" id="scene-wrap">
-        <canvas id="scene" tabindex="0" aria-label="Fly and phone. Drag to orbit. Space pauses; arrow keys skip; C changes camera; M toggles audio."></canvas>
+        <canvas id="scene" tabindex="0" aria-label="Live 3D fly recovery simulation. Drag to orbit. Space pauses; arrow keys change scenes; R replays; C resets the camera; F enters fullscreen."></canvas>
         <div class="scene-shade" aria-hidden="true"></div>
         <div class="scene-heading">
           <div class="brain-status"><span class="live-dot"></span><span id="top-state">BRAIN CONNECTING</span></div>
           <p id="model-detail">Loading the local connectome…</p>
         </div>
-        <div class="session-stamp"><span>EXPOSURE</span><strong id="session-time">00:00:00</strong></div>
+        <div class="session-stamp"><span id="drive-state">CONNECTING</span><strong id="session-time">00:00</strong></div>
+        <div class="recovery-stage"><div class="stage-kicker">RECOVERY <span id="stage-number">01 / 05</span></div><h2 id="stage-title">Unplugged</h2><div class="stage-track" aria-hidden="true"><i class="stage-tick active"></i><i class="stage-tick"></i><i class="stage-tick"></i><i class="stage-tick"></i><i class="stage-tick"></i></div><button id="replay" hidden>Replay sequence ↺</button></div>
         <div class="scene-error" id="scene-error" role="alert" hidden>Your browser couldn’t start the 3D scene. Try a browser with WebGL enabled.</div>
         <div class="scene-message" id="scene-message" role="status"></div>
         <aside class="neural-overlay" aria-label="Measured neural activity">
@@ -47,8 +48,8 @@
       </div>
     </section>
     <footer>
-      <p>MaleCNS v1.0 · Real wiring, approximate dynamics.<br><span>Movement amplified from measured neural activity.</span></p>
-      <div class="credits"><a href="./media/playlist.json" target="_blank" rel="noreferrer">Video credits ↗</a><a href="https://github.com/nftechie/stonkfly" target="_blank" rel="noreferrer">Inspired by stonkfly ↗</a></div>
+      <p>MaleCNS v1.0 · Real wiring, approximate dynamics.<br><span>Live eye-view input. Choreographed gait with measured motor responses.</span></p>
+      <div class="credits"><span>F–001 / RECOVERY</span><a href="https://github.com/nftechie/stonkfly" target="_blank" rel="noreferrer">Inspired by stonkfly ↗</a></div>
     </footer>
   </main>
   <script type="module" src="./main.js"></script>

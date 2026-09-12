@@ -70,8 +70,8 @@ def test_pixels_reward_memory_and_checkpoint(tmp_path):
     print(json.dumps({"neurons": b.n, "edges": len(b.post), "white_spikes": light["total_spikes"], "black_spikes": dark["total_spikes"], "control_pam11_spikes": control["pam11_spikes"], "stimulated_pam11_spikes": reward["pam11_spikes"], "watching_pam11_spikes": watching["pam11_spikes"], "watching_pam11_hz": watching["pam11_hz"], "watching_continued_pam11_spikes": continued["pam11_spikes"], "changed_synapses": reward["memory"]["changed_edges"], "checkpoint_replay_exact": True}, indent=2))
 
 
-@pytest.mark.parametrize("video_reward", [True, False])
-def test_real_model_http_transport_and_save(tmp_path, video_reward):
+@pytest.mark.parametrize("video_reward,recovery", [(True, False), (False, False), (True, True)])
+def test_real_model_http_transport_and_save(tmp_path, video_reward, recovery):
     import hashlib
     from functools import partial
     import threading
@@ -81,15 +81,18 @@ def test_real_model_http_transport_and_save(tmp_path, video_reward):
     from flywirehead.server import Experiment, Handler, ThreadingHTTPServer
     from flywirehead.engine import decode_frame
 
-    exp = Experiment(tmp_path, video_reward=video_reward)
+    exp = Experiment(tmp_path, video_reward=video_reward, recovery=recovery)
     server = ThreadingHTTPServer(("127.0.0.1", 0), partial(Handler, experiment=exp))
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
     exp.start()
     url = f"http://127.0.0.1:{server.server_port}"
+    visual_scene, attached = "unplugged", True
 
     def request(path, body=None, content_type="application/json"):
         headers = {"X-Fly-Token": exp.token, "X-Fly-Client": "full-assay", "Content-Type": content_type}
+        if recovery and path == "/api/frame":
+            headers.update({"X-Fly-Experience": "recovery", "X-Fly-Scene": visual_scene, "X-Fly-Attached": str(attached).lower()})
         with urlopen(Request(url + path, body, headers=headers), timeout=10) as response:
             return json.load(response)
 
@@ -116,6 +119,31 @@ def test_real_model_http_transport_and_save(tmp_path, video_reward):
         assert first["model"]["reward"]["video_enabled"] is video_reward
         assert first["telemetry"]["video_stimulus_ms"] == (50 if video_reward else 0)
         assert first["telemetry"]["manual_stimulus_ms"] == 0
+        if recovery:
+            assert first["telemetry"]["visual_source"] == "fly_eye_camera"
+            assert first["telemetry"]["pam11_spikes"] > 0
+            visual_scene, attached = "walking", False
+            rgba[:, :, 1] = 40
+            request("/api/frame", rgba.tobytes(), "application/octet-stream")
+            detached = wait_for(lambda s: s["sequence"] >= 2 and not s["busy"])
+            assert detached["telemetry"]["stimulus_ms"] == 0
+            assert detached["telemetry"]["stimulus_current_mv"] == 0
+            assert detached["telemetry"]["scene"] == "walking"
+            assert detached["telemetry"]["input_sha256"] != first["telemetry"]["input_sha256"]
+            assert not detached["stimulation_attached"]
+            visual_scene, attached = "unplugged", True
+            request("/api/frame", rgba.tobytes(), "application/octet-stream")
+            replay = wait_for(lambda s: s["sequence"] >= 3 and not s["busy"])
+            assert replay["telemetry"]["stimulus_ms"] == 0
+            assert np.all(exp.engine.brain.drive[exp.engine.brain.circuit["reward"]] == 0)
+            paused = request("/api/control", b'{"action":"pause"}')
+            time.sleep(.15)
+            assert request("/api/status")["sequence"] == paused["sequence"]
+            request("/api/control", b'{"action":"save"}')
+            saved = wait_for(lambda s: s["checkpoint"] and not s["busy"])
+            assert saved["checkpoint"]["sim_ms"] == 150
+            print(f"Recovery HTTP: attached PAM11={first['telemetry']['pam11_hz']:.2f} Hz; unplugged current=0; replay stays unplugged; eye-view pixels and checkpoint verified.")
+            return
         time.sleep(.15)
         idle = request("/api/status")
         assert idle["sequence"] == first["sequence"]

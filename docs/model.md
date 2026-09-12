@@ -1,77 +1,54 @@
-# How the experiment works
+# How recovery works
 
-[← Back to the README](../README.md)
+[← README](../README.md)
 
-## What actually runs
+## Visual observations
 
-1. An HTML video element plays the downloaded insect playlist. Its decoded frames fill the portrait phone canvas edge to edge, which Three.js displays. Clip changes slide vertically; there is no blurred filler or letterboxing added by the player.
-2. The browser reads that composited screen into a **90×160 RGBA** frame. Python flips WebGL's rows and removes alpha. The most recent accepted screen image is saved as `runs/local/latest-input.png`.
-3. The upstream inferred visual projection stimulates **3,335 R1–R6 inputs and 811 R8 inputs** from the image's luminance and color.
-4. Python calls the compiled C++17 kernel through `ctypes`. It integrates the full retained spiking graph in **0.1 ms** steps.
-5. Each accepted frame advances **50 ms of neural time** by default. The overlay shows wall-clock exposure; API telemetry and local logs retain simulated brain time and compute time. It samples the video; it does not claim frame-for-frame biological real-time playback.
-6. Actual network spike counts, mean PAM11/KC firing rates, and 10 ms bins for 96 fixed identified cells return to the observation window. Missing/disconnected engines display no measurements; there is no fake fallback.
+The recovery branch retains the checksum-locked MaleCNS v1.0 graph and the upstream inferred retinal projection. Three.js renders a separate perspective camera from the fly's head into a 90×160 RGBA target. The fly's own mesh is hidden for that capture; the active environment remains visible. This is an approximate shared eye camera, not a validated compound-eye optical model.
 
-The playlist automatically advances after three seconds of actual media playback and wraps after the final clip. Pausing, buffering, or hiding the window holds that timer. An early video end also advances to the next clip. Its titles and creator links come from the downloaded metadata. The subject is compelled to receive whichever clip is on screen; the feed's order and playback timing are presentation controls, not learned behavior. Loading, failed, paused, or stalled playback supplies no new observations; the most recent valid measurements remain visible.
+Python flips WebGL's bottom-up image and removes alpha. Luminance and colour drive 3,335 R1–R6 inputs and 811 R8 inputs. The C++17 kernel advances 50 ms per accepted observation by default, with 0.1 ms integration steps. The brain samples the visible environment more slowly than the presentation's wall clock.
 
-## Reward, learning, and movement
+The observer's camera cuts do not change the retinal camera. The HUD never enters the sensory image. Captures carry their scene and cable-attachment state with the exact pixels. A failed render, disconnected backend, pause, or hidden window prevents further observations. The worker waits without a frame; an in-flight sample can finish.
 
-**Video-linked PAM11 stimulation is enabled by default.** Each accepted video observation applies a **20 mV-equivalent current** to the **15 annotated PAM11 cells** for the entire neural interval (50 ms by default). The C++ kernel computes the resulting spikes and propagates them through the existing network. This is a fixed artificial input, independent of the clip's identity or a swipe.
+## Unplugging
 
-The browser withholds frames while playback is loading, paused, buffering, seeking, ended, stale, hidden, or failed. Without an accepted frame the neural worker waits, so no new current or simulated time is delivered. An observation already computing can finish; residual neural activity is not forcibly erased.
+Before 2.6 seconds of the opening scene, attached observations enable the existing 20 mV-equivalent drive to the 15 annotated PAM11 cells, unless `--no-video-reward` is set. Accepting the first detached recovery frame latches stimulation off for the remainder of that worker's lifetime. Later scene jumps, camera replay, pause/resume, and stale attached frames cannot turn it back on.
 
-**Manual stimulation** (keyboard **P** or WebMCP) schedules a 200 ms pulse at the same amplitude. Manual and automatic drive overlap at 20 mV-equivalent, rather than adding together. Repeated manual requests replace the pending pulse. `stimulus_ms` records the total stimulated interval; `video_stimulus_ms` and `manual_stimulus_ms` record its possibly overlapping sources. `stimulus_current_mv` records the delivered amplitude. Model metadata and provenance record whether video stimulation is enabled.
+The recovery worker validates the scene, attachment state, frame size, local session, pause state, and ownership before accepting a frame. An exercise scene cannot request attached stimulation. Manual pulses are disabled in recovery; no old queued manual pulse is delivered. Telemetry retains the existing `stimulus_ms`, `stimulus_current_mv`, `video_stimulus_ms`, and `manual_stimulus_ms` fields for compatibility. The provenance explains that the historical video drive field now describes opening-cable stimulation. Each event also records `scene` and `visual_source: fly_eye_camera`.
 
-Use `--no-video-reward` with a separate `--run-dir` for an unstimulated comparison; manual pulses remain available. The low-level `FlyEngine.observe()` API requires explicit `video_reward=True`, so numerical control assays do not receive automatic reward accidentally.
+Replay restarts presentation time only. Restarting the Python worker starts a new attachment lifecycle while restoring the saved neural state; use `--no-video-reward` to start wholly unstimulated.
 
-The upstream experimental plasticity rule can modify the **7,835 existing KC→MBON07/11 connections**. The API and saved telemetry report how many differ from baseline. A changing weight alone is not evidence of useful learning, pleasure, attention, or addiction. PAM11 telemetry uses **spikes per neuron per neural second (Hz)**, not a fabricated dopamine concentration or percentage.
+## Measurements and movement
 
-The 3D movement is an amplified artistic readout: wing flutter and body/leg motion map MN9/DNp09 firing, head turning maps DNa02 right-minus-left firing, and electrode glow maps PAM11 firing. Motor rates use a saturating response tuned for the observed 5–30 Hz range, with a 100 ms attack and 700 ms release so brief bursts remain visible. Turning is smoothed over 200 ms. This changes only the animation; it adds no neural spikes or stimulation. Ambient breathing, swaying garden foliage, drifting pollen, and screen motion are visual effects. This is not a validated biomechanical fly model.
+The graph displays the latest 120 measured mean PAM11 firing rates in Hz, using actual simulated timestamps and labelled automatic axis bounds. No synthetic signal, interpolation samples, dopamine concentration, or reward for completing a scene is supplied. Zero activity is shown as zero. The whole-network sample spike count stays alongside the graph. The numerical API retains the KC/motor rates and fixed 96-cell raster.
 
-The display puts a **Dopamine activity** reading and one full-width **PAM11 firing rate** chart over the chamber, with no current-video captions or visible controls. It plots the server's latest 120 measurements of mean PAM11 spikes per neuron per neural second (Hz). The automatic detail scale shows its actual lower and upper bounds, which may start above zero, to make small changes legible. Samples are neither smoothed nor supplemented with artificial fluctuations; a constant signal remains flat. The horizontal position follows simulated timestamps, and the plot holds when no new samples arrive. **Fly spikes** remains the actual count across the full graph in the most recent 50 ms sample. The old network plot and 96-cell raster are removed from the display; their underlying telemetry remains available through the API. PAM11 firing is not a dopamine concentration or a measure of whole-network activity.
+All five scenes share a 64-second presentation clock. The beginning holds a front-on face close-up for six seconds. Walking includes a timed stumble, loss of support in the bandaged foreleg, and recovery. The treadmill belt and gait advance with the same presentation clock. The staircase has 36 risers of 0.17 m, 0.32 m treads, and a 6 m width. The specimen is displayed enlarged in a metre-scale environment. A white cloth wrap follows the anatomical front-right joint in every pose.
 
-The front right leg has an additional choreographed swipe gesture, separate from its measured motor response. Each video transition uses a shared 900 ms timeline: the leg reaches forward, its upward stroke follows the exact same easing as the outgoing video, and it returns to its resting pose. Joint positions preserve the original segment lengths. Automatic advances and manual skips use the same gesture; loading, pause, and buffering hold the shared transition. Reduced-motion mode omits both the leg gesture and the phone slide. This presentation animation does not choose videos, stimulate the neural model, or represent a learned action.
+Two-bone inverse kinematics preserves leg segment lengths and bounds unreachable targets. The stair gait projects feet onto the stepped surface. The five-scene choreography controls travel, exercise gait, and the victory pose. Actual MN9/DNp09 rates modulate wing/body movement, while DNa02 right-minus-left rates modulate turning. These are artistic readouts; the brain has not learned the gait, climbed the staircase autonomously, or demonstrated recovery.
 
-## Controls and persistence
+The existing experimental plasticity rule can modify 7,835 KC→MBON07/11 edges. It is neither a validated model of addiction nor evidence of useful learning or subjective experience. The underlying physiology remains approximate. No animals are involved.
 
-- Playback runs automatically with no visible controls. Drag to orbit; **C** cycles three camera positions and **F** toggles fullscreen.
-- Scroll, swipe vertically, or press an arrow key to skip a short.
-- **Space** pauses the actual video and stops new neural observations after any already-running step finishes.
-- **P** applies PAM11 stimulation to the numerical model.
-- **S** requests a checkpoint. Checkpoints are also saved every two active minutes and on **Ctrl-C**.
-- Restarting restores neural state and plastic weights from `runs/local/brain.npz`. Queued stimulation is not replayed on restart.
-- **M** toggles the video's original audio, which starts muted. Reduced-motion preferences start the experiment paused. Hidden or closed observation windows pause playback and supply no new frames, so the brain waits.
-- One observation window at a time supplies the sensory stream. A second can take over after four seconds without input from the first.
+## Local operation
 
-`runs/local/events.jsonl` contains actual measurements and input/spike hashes; `latest.json` is the last observation; `provenance.json` records the data/model/source configuration. Neuron IDs are serialized as strings to preserve integer precision.
+`uv run flywirehead run` serves the recovery branch on loopback port 4173 and defaults to `runs/recovery`. This avoids overwriting the original feed's `runs/local`. Checkpoints preserve neural state and plastic weights. Each run directory has an exclusive worker lock. The API requires a local origin and ephemeral session token for mutations; one observation window supplies the stream at a time.
 
-Useful options:
+- `brain.npz`: saved neural state.
+- `events.jsonl`: measured samples, scene identity, visual source, input hash, spike hash, and actual current delivery.
+- `latest-input.png`: the RGB image supplied to the last neural sample.
+- `latest.json`: that sample's telemetry.
+- `provenance.json`: source locks, model, visual-source description, and stimulation policy.
 
-```sh
-uv run flywirehead verify
-uv run flywirehead run --no-browser
-uv run flywirehead run --neural-ms 100
-uv run flywirehead run --run-dir runs/control --no-video-reward --frozen
-uv run flywirehead run --run-dir runs/new-experiment --fresh
-uv run flywirehead --data /path/to/data run
-```
+Space pauses, arrows change scenes, R replays, C resets the camera, F enters fullscreen, and S requests a checkpoint. The optional `control_fly_recovery` WebMCP tool exposes those scene/brain actions. A final replay button leaves the completed victory pose in view until requested. Hidden tabs provide no new observations. Reduced-motion preferences begin paused and omit cyclic gait. Three.js is vendored; Google Fonts are optional with system fallbacks.
 
-Use a separate `--run-dir` for independent experiments. `--fresh` explicitly starts over and will replace that run's checkpoint when saved. Only one worker can own a run directory. The server binds to loopback, validates local origins, and uses an ephemeral session token for controls. No cloud service or trading credentials are used.
-
-## Validation
+## Verification and sources
 
 ```sh
 uv sync --extra test
 uv run pytest -q
-FLYWIREHEAD_FULL_TEST=1 uv run pytest -q -s tests/test_full_connectome.py
 node --test tests/*.test.mjs
+FLYWIREHEAD_FULL_TEST=1 uv run pytest -q -s tests/test_full_connectome.py
 ```
 
-The full-graph assay compares black/white visual input from the same checkpoint, stimulated/control trials, frozen plasticity, and exact replay after restore. It checks actual mechanism behavior, not biological validity or whether the fly has learned to prefer shorts.
+Full-network checks cover visual input, current injection and removal, frozen plasticity, exact checkpoint replay, real HTTP pixels, pause, and save. Recovery adds an irreversible-unplug check through the actual worker and verifies that camera replay supplies no further current. JavaScript checks cover the five scene boundaries, stumble timing, joint-length preservation, staircase dimensions, and metadata accompanying captured pixels.
 
-## Sources
-
-The numerical backend is adapted from [nftechie/stonkfly](https://github.com/nftechie/stonkfly), commit `78ef3e05ab0fa086032098558d893667068944a0`, under MIT. The local copy includes the source, provenance, lockfiles, and license; it does not depend on the reference clone or import its trading stack. See [THIRD_PARTY.md](../THIRD_PARTY.md) for MaleCNS CC BY 4.0 attribution and [flywirehead/upstream.json](../flywirehead/upstream.json) for source hashes.
-
-The model combines real reconstructed wiring with approximate physiology and an unvalidated experimental memory rule. It does not reproduce a complete living fly or establish consciousness. No real animals are involved.
-
-The optional WebMCP controls share the normal interface actions; status, pause, resume, and next-short actions were verified in the local browser. WebGL 2 and H.264 video playback are needed for the 3D window. Three.js is vendored locally; the Google Fonts stylesheet is optional and falls back to system fonts offline.
+The numerical backend is adapted from [nftechie/stonkfly](https://github.com/nftechie/stonkfly), commit `78ef3e05ab0fa086032098558d893667068944a0`, under MIT. Dataset attribution and pinned hashes are retained in [THIRD_PARTY.md](../THIRD_PARTY.md), [upstream.json](../flywirehead/upstream.json), and the neural lockfiles. The original feed implementation and its README are on the `main` branch.

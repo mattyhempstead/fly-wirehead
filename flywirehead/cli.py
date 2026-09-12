@@ -15,7 +15,7 @@ def main():
     run = sub.add_parser("run", help="Run the local brain and its 3D observation window")
     run.add_argument("--port", type=int, default=4173)
     run.add_argument("--no-browser", action="store_true")
-    run.add_argument("--run-dir", type=Path, default=Path("runs/local"))
+    run.add_argument("--run-dir", type=Path, default=Path("runs/recovery"))
     run.add_argument("--neural-ms", type=float, default=50.0, help="Simulated milliseconds per submitted frame (0.1–500)")
     run.add_argument("--fresh", action="store_true", help="Start without restoring the existing checkpoint")
     run.add_argument("--frozen", action="store_true", help="Freeze plastic synaptic weights for a control run")

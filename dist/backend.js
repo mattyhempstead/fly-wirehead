@@ -36,8 +36,16 @@ export class BrainClient {
       }
       this.publish(status);
       if (status.phase === 'ready' && !status.paused && !status.busy && !globalThis.document?.hidden) {
-        const bytes = this.captureFrame();
-        if (bytes) await this.request('/api/frame', { method: 'POST', headers: { 'Content-Type': 'application/octet-stream', 'X-Fly-Client': this.clientId }, body: bytes });
+        const capture = this.captureFrame();
+        if (capture) {
+          const headers = { 'Content-Type': 'application/octet-stream', 'X-Fly-Client': this.clientId };
+          if (capture.recovery) {
+            headers['X-Fly-Experience'] = 'recovery';
+            headers['X-Fly-Scene'] = capture.recovery.scene;
+            headers['X-Fly-Attached'] = capture.recovery.attached ? 'true' : 'false';
+          }
+          await this.request('/api/frame', { method: 'POST', headers, body: capture.bytes || capture });
+        }
       }
     } catch (error) {
       this.token = null; this.status = null; this.onError(error); delay = 2000;

@@ -16,6 +16,7 @@ import webbrowser
 from .engine import FRAME_HEIGHT, FRAME_WIDTH, PAM11_CURRENT_MV, FlyEngine, decode_frame
 
 ROOT = Path(__file__).resolve().parents[1]
+RECOVERY_SCENES = {"unplugged", "walking", "treadmill", "stairs", "victory"}
 
 
 def atomic_json(path, data):
@@ -25,11 +26,13 @@ def atomic_json(path, data):
 
 
 class Experiment:
-    def __init__(self, run_dir, *, neural_ms=50.0, fresh=False, frozen=False, video_reward=True, factory=FlyEngine, verifier=None):
+    def __init__(self, run_dir, *, neural_ms=50.0, fresh=False, frozen=False, video_reward=True, recovery=False, factory=FlyEngine, verifier=None):
         self.run_dir = Path(run_dir)
         self.run_dir.mkdir(parents=True, exist_ok=True)
         self.neural_ms, self.fresh, self.frozen = neural_ms, fresh, frozen
         self.video_reward = video_reward
+        self.recovery = recovery
+        self.stimulation_attached = True
         self.factory, self.verifier = factory, verifier
         self.condition = threading.Condition()
         self.pending = None
@@ -50,14 +53,21 @@ class Experiment:
     def snapshot(self):
         with self.condition:
             # Worker replaces nested payloads rather than mutating published values.
-            state = {**self.state, "frame_width": FRAME_WIDTH, "frame_height": FRAME_HEIGHT, "neural_ms": self.neural_ms}
+            state = {**self.state, "frame_width": FRAME_WIDTH, "frame_height": FRAME_HEIGHT, "neural_ms": self.neural_ms, "stimulation_attached": self.stimulation_attached and self.video_reward}
             if state["telemetry"] and not state["busy"]:
                 state["input_age_seconds"] = max(0, time.time() - state["telemetry"]["received_at"])
                 if state["input_age_seconds"] > 3:
                     state["message"] = "Waiting for fresh screen pixels"
             return state
 
-    def submit(self, body, client):
+    def submit(self, body, client, *, recovery=None):
+        if self.recovery:
+            if not isinstance(recovery, dict) or set(recovery) != {"scene", "attached"} or recovery["scene"] not in RECOVERY_SCENES or not isinstance(recovery["attached"], bool):
+                raise ValueError("A recovery scene and attachment state are required")
+            if recovery["attached"] and recovery["scene"] != "unplugged":
+                raise ValueError("Stimulation cannot be attached in a recovery exercise")
+        elif recovery is not None:
+            raise RuntimeError("Restart the local server from the recovery branch")
         frame = decode_frame(body)
         with self.condition:
             if self.state["phase"] != "ready":
@@ -68,7 +78,11 @@ class Experiment:
             if self.owner not in (None, client) and now - self.owner_seen < 4:
                 raise RuntimeError("Another observation window is supplying the frames")
             self.owner, self.owner_seen = client, now
-            self.pending = (frame, time.time())
+            if self.recovery and not recovery["attached"]:
+                # Detachment is irreversible for this worker, including camera replay.
+                self.stimulation_attached = False
+                self.injection_requested = False
+            self.pending = (frame, time.time(), recovery["scene"] if self.recovery else "video")
             self.condition.notify_all()
 
     def control(self, action):
@@ -84,6 +98,8 @@ class Experiment:
                 if action == "pause":
                     self.injection_requested = False
             elif action == "stimulate":
+                if self.recovery:
+                    raise RuntimeError("Manual stimulation is disabled during recovery")
                 if self.state["paused"]:
                     raise RuntimeError("Resume before stimulating PAM11 cells")
                 self.injection_requested = True
@@ -113,9 +129,9 @@ class Experiment:
                 b.restore(checkpoint)
                 b.weights_frozen = self.frozen
                 # No queued stimulus is replayed after a restart.
-            reward = {"video_enabled": self.video_reward, "target": "PAM11", "cells": len(b.circuit["reward"]), "current_mv_equivalent": PAM11_CURRENT_MV, "trigger": "Each accepted playing-video observation", "manual_pulse_ms": 200, "overlap": "Manual and video current do not stack"}
-            model = {**verified, "backend": "Python / C++17", "dt_ms": b.dt, "plastic_edges": len(b.circuit["edges"]), "retinal_inputs": len(b.retina) + len(b.r8), "sample_cells": self.engine.sample_cells, "frozen": self.frozen, "reward": reward, "physiology_validated": False}
-            atomic_json(self.run_dir / "provenance.json", {"model": model, "upstream": json.loads((ROOT / "flywirehead/upstream.json").read_text()), "neural_ms_per_frame": self.neural_ms, "frame_source": "90x160 RGBA captured from the displayed short; flipped to RGB", "reward": reward, "animation": "Artistic mapping of measured PAM11, MN9/DNp09 and DNa02 spike rates; choreographed foreleg swipe", "started_at": time.time()})
+            reward = {"video_enabled": self.video_reward, "target": "PAM11", "cells": len(b.circuit["reward"]), "current_mv_equivalent": PAM11_CURRENT_MV, "trigger": "Accepted eye-view frames while attached; permanently off after unplugging" if self.recovery else "Each accepted playing-video observation", "manual_pulse_ms": 0 if self.recovery else 200, "overlap": "Manual and video current do not stack"}
+            model = {**verified, "experience": "recovery" if self.recovery else "feed", "backend": "Python / C++17", "dt_ms": b.dt, "plastic_edges": len(b.circuit["edges"]), "retinal_inputs": len(b.retina) + len(b.r8), "sample_cells": self.engine.sample_cells, "frozen": self.frozen, "reward": reward, "physiology_validated": False}
+            atomic_json(self.run_dir / "provenance.json", {"model": model, "upstream": json.loads((ROOT / "flywirehead/upstream.json").read_text()), "neural_ms_per_frame": self.neural_ms, "frame_source": "90x160 RGBA rendered from a camera at the fly's eyes in the current 3D recovery world; observer camera and HUD excluded" if self.recovery else "90x160 RGBA captured from the displayed short; flipped to RGB", "reward": reward, "animation": "Choreographed rehabilitation with measured motor and turning modulation; not learned gait or validated recovery" if self.recovery else "Artistic mapping of measured PAM11, MN9/DNp09 and DNa02 spike rates; choreographed foreleg swipe", "started_at": time.time()})
             with self.condition:
                 self.state.update(phase="ready", message="Waiting for screen pixels", model=model, restored_ms=b.sim_ms)
             print(f"Brain ready: {b.n:,} neurons, {len(b.post):,} connections; {b.sim_ms:.1f} ms simulated", flush=True)
@@ -134,18 +150,21 @@ class Experiment:
                         else:
                             item, self.pending = self.pending, None
                             injection, self.injection_requested = self.injection_requested, False
+                            drive = self.video_reward and (not self.recovery or self.stimulation_attached)
                         self.state["busy"] = True
                     if save:
                         self._save()
                     else:
-                        frame, received = item
+                        frame, received, observed_scene = item
+                        if self.recovery:
+                            self.engine.pending_pulse_ms = 0
                         if injection:
                             self.engine.stimulate()
-                        result = self.engine.observe(frame, self.neural_ms, video_reward=self.video_reward)
+                        result = self.engine.observe(frame, self.neural_ms, video_reward=drive)
                         bins = result.pop("bins")
                         raster.extend(bins)
                         history.append({"sim_ms": result["sim_ms"], "pam11_hz": result["pam11_hz"]})
-                        event = {**result, "received_at": received, "completed_at": time.time()}
+                        event = {**result, "received_at": received, "completed_at": time.time(), "scene": observed_scene, "visual_source": "fly_eye_camera" if self.recovery else "phone"}
                         log.write(json.dumps(event, allow_nan=False) + "\n")
                         atomic_json(self.run_dir / "latest.json", event)
                         from PIL import Image
@@ -229,7 +248,13 @@ class Handler(SimpleHTTPRequestHandler):
                 client = self.headers.get("X-Fly-Client", "")
                 if not 1 <= len(client) <= 80:
                     raise ValueError("A client ID is required")
-                self.experiment.submit(body, client)
+                recovery = None
+                if self.headers.get("X-Fly-Experience") == "recovery":
+                    attached = self.headers.get("X-Fly-Attached")
+                    if attached not in {"true", "false"}:
+                        raise ValueError("Attachment must be true or false")
+                    recovery = {"scene": self.headers.get("X-Fly-Scene"), "attached": attached == "true"}
+                self.experiment.submit(body, client, recovery=recovery)
                 return self.respond(202, {"accepted": True})
             if path == "/api/control":
                 data = json.loads(body)
@@ -251,7 +276,7 @@ def serve(args):
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
     except BlockingIOError:
         raise SystemExit("This run directory is already in use by another brain process")
-    experiment = Experiment(run_dir, neural_ms=args.neural_ms, fresh=args.fresh, frozen=args.frozen, video_reward=not args.no_video_reward)
+    experiment = Experiment(run_dir, neural_ms=args.neural_ms, fresh=args.fresh, frozen=args.frozen, video_reward=not args.no_video_reward, recovery=True)
     server = ThreadingHTTPServer(("127.0.0.1", args.port), partial(Handler, experiment=experiment))
     experiment.start()
     url = f"http://127.0.0.1:{server.server_port}"
