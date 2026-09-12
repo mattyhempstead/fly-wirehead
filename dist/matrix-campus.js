@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { bake, builders } from './matrix-geometry.js';
 import { random, stations } from './matrix-timeline.js';
-import { FLY_X, FLY_Y, FLY_SCALE } from './matrix-fly.js';
+import { createLowFlies } from './matrix-low-fly.js';
 import { blocks, rooms, ROOM_COUNT, ROOMS_PER_BLOCK, ROOM_SIZE, ROOM_WALL_HEIGHT, BLOCK_COUNT, BLOCK_SIZE, CAMPUS_SIZE, CAMPUS_CENTER, DETAIL_SPAN, visibleRoomCount, visibleBlockCount, revealOpacity } from './matrix-scale.js';
 
 export function createCampus(scene, room, screens) {
@@ -47,20 +47,13 @@ export function createCampus(scene, room, screens) {
   const blockGeometry = bake(blockRoot), blockMaterial = shellMaterial.clone();
   const primaryBlock = instances(blockGeometry, blockMaterial, 1);
   const outerBlocks = instances(blockGeometry, blockMaterial.clone(), BLOCK_COUNT - 1);
-  // Nearby copies retain raised benches, phones, and fly silhouettes. Cap this
-  // tier at 81 rooms, then fade it into the room snapshot as it becomes tiny.
+  // Nearby rooms keep recognizable, animated 3D flies. The instanced tier is
+  // bounded so the full campus still uses the inexpensive room snapshots.
   const nearRoot = new THREE.Group(), n = builders(nearRoot);
   for (const station of stations) {
     n.box([5.18, .15, 3.30], [station.x, .74, station.z], 0x263c2a);
+    n.box([3, .022, 2.65], [station.x - .76, .855, station.z], 0x54715a);
     n.box([.11, 2.5, 1.47], [station.x + 1.12, 2.1, station.z], 0x0b1411);
-    const fly = new THREE.Group(); fly.position.set(station.x + FLY_X, FLY_Y, station.z); fly.scale.setScalar(FLY_SCALE); nearRoot.add(fly);
-    n.orb([.85, .35, .38], [-.58, -.10, 0], 0x18282a, fly, 0);
-    n.orb([.51, .54, .49], [.02, .10, 0], 0x304746, fly, 0);
-    n.orb([.34, .37, .35], [.63, .23, 0], 0x354f49, fly, 0);
-    for (const side of [-1, 1]) {
-      n.orb([.23, .31, .18], [.78, .26, side * .29], 0x871a32, fly, 0);
-      const wing = n.mesh(new THREE.PlaneGeometry(1.5, .50), 0x71928b, [-.75, .60, side * .43], fly); wing.rotation.x = -Math.PI / 2;
-    }
   }
   const nearGeometry = new THREE.InstancedMesh(bake(nearRoot), new THREE.MeshBasicMaterial({ vertexColors: true, fog: false, transparent: true }), 81);
   const nearScreens = new THREE.InstancedMesh(screens.geometry, screens.material.clone(), 81);
@@ -68,6 +61,7 @@ export function createCampus(scene, room, screens) {
   nearGeometry.frustumCulled = nearScreens.frustumCulled = false;
   nearGeometry.renderOrder = nearScreens.renderOrder = 1;
   root.add(nearGeometry, nearScreens);
+  const nearFlies = createLowFlies(root, rooms.slice(0, 81));
   const transform = new THREE.Object3D(), color = new THREE.Color();
   for (let i = 0; i < rooms.length; i++) {
     const copy = rooms[i]; transform.position.set(copy.x, 0, copy.z); transform.updateMatrix();
@@ -103,9 +97,9 @@ export function createCampus(scene, room, screens) {
         renderer.setRenderTarget(oldTarget); scene.fog = oldFog; root.visible = oldRoot; room.visible = oldRoom;
       }
     },
-    update(span, aspect, orbit) {
+    update(span, aspect, orbit, time, motor) {
       detail = span < DETAIL_SPAN || !ready;
-      const fade = revealOpacity(span);
+      const fade = revealOpacity(span, orbit);
       room.visible = detail; root.visible = ready;
       for (const mesh of [floors, shells, primaryBlock, foundation]) {
         mesh.visible = fade.rooms > 0;
@@ -115,7 +109,7 @@ export function createCampus(scene, room, screens) {
         mesh.visible = fade.blocks > 0;
         mesh.material.opacity = fade.blocks;
       }
-      const nearFade = fade.rooms * (1 - THREE.MathUtils.smoothstep(span, 350, 600));
+      const nearFade = fade.rooms * (1 - THREE.MathUtils.smoothstep(span, 450, 750));
       nearGeometry.visible = nearScreens.visible = nearFade > 0;
       nearGeometry.material.opacity = nearScreens.material.opacity = nearFade;
       const roomCount = visibleRoomCount(span, aspect, orbit.phi, orbit.target);
@@ -123,6 +117,7 @@ export function createCampus(scene, room, screens) {
       outerFloors.count = outerShells.count = Math.max(0, roomCount - ROOMS_PER_BLOCK);
       outerBlocks.count = Math.max(0, visibleBlockCount(span, aspect, orbit.phi, orbit.target) - 1);
       nearGeometry.count = nearScreens.count = Math.min(81, roomCount);
+      nearFlies.update(roomCount, nearFade, time, motor);
       renderedRooms = root.visible ? (fade.rooms > 0 ? floors.count : 1) + outerFloors.count : 1;
       renderedBlocks = root.visible && fade.blocks > 0 ? outerBlocks.count + 1 : 1;
       // The central room is either the real geometry or its proxy, never both.
@@ -135,7 +130,7 @@ export function createCampus(scene, room, screens) {
         previousDetail = detail;
       }
     },
-    stats() { return { rooms: ROOM_COUNT, roomsPerBlock: ROOMS_PER_BLOCK, blocks: BLOCK_COUNT, renderedRooms, renderedBlocks, detailedRooms: detail ? 1 : 0 }; },
+    stats() { return { rooms: ROOM_COUNT, roomsPerBlock: ROOMS_PER_BLOCK, blocks: BLOCK_COUNT, renderedRooms, renderedBlocks, detailedRooms: detail ? 1 : 0, animatedReplicaFlies: nearFlies.count }; },
     dispose() { snapshot.dispose(); }
   };
 }

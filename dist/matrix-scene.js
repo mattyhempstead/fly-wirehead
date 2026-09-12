@@ -8,7 +8,8 @@ import { createRestraints } from './matrix-restraints.js';
 import { createAtmosphere } from './matrix-atmosphere.js';
 import { createOrbitCamera } from './matrix-camera.js';
 import { createCampus } from './matrix-campus.js';
-import { CAMPUS_CENTER, CAMPUS_SPAN, BLOCK_CENTER, BLOCK_SPAN, ROOM_WALL_HEIGHT, DETAIL_SPAN, REPRESENTED_FLIES } from './matrix-scale.js';
+import { rooms, CAMPUS_CENTER, CAMPUS_SPAN, BLOCK_CENTER, BLOCK_SPAN, ROOM_WALL_HEIGHT, DETAIL_SPAN, REPRESENTED_FLIES } from './matrix-scale.js';
+import { wingbeatProfile, wingbeatAngle } from './matrix-wingbeat.js';
 
 export function createMatrix(canvas, feed) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
@@ -146,6 +147,7 @@ export function createMatrix(canvas, feed) {
   const start = new THREE.Vector3(), end = new THREE.Vector3(), up = new THREE.Vector3(0, 1, 0), socket = new THREE.Vector3();
   const radii = [.034, .022, .013];
   const campus = createCampus(scene, room, screenMesh);
+  const wingbeats = stations.map(station => wingbeatProfile(rooms[0].id, station.id));
   let lastTextureVersion = -1, width = 0, height = 0;
   // Saved from the user's chosen angle and pan on central station G5.
   // Keep the visible vertical span when adapting that shot to the 16:9 frame.
@@ -180,7 +182,7 @@ export function createMatrix(canvas, feed) {
         restraints.pose(s, body.matrix);
         for (let i = 0; i < 2; i++) {
           part.position.set(-.18, .41, .23 * (i ? 1 : -1));
-          part.rotation.set((i ? 1 : -1) * Math.sin(time * (18 + s.phase * .35) + s.phase) * (.075 + response.motor * .28), 0, 0);
+          part.rotation.set((i ? 1 : -1) * wingbeatAngle(wingbeats[s.id], time, response.motor), 0, 0);
           part.scale.setScalar(1); part.updateMatrix(); matrix.multiplyMatrices(body.matrix, part.matrix); wings[i].setMatrixAt(s.id, matrix);
         }
         const points = frontRightLegPose(feed.frames[s.id]?.gesture ?? 1);
@@ -203,7 +205,7 @@ export function createMatrix(canvas, feed) {
     }
     if (lastTextureVersion !== feed.version) { feedTexture.needsUpdate = true; lastTextureVersion = feed.version; }
     if (feed.ready && campus.needsCapture(time, detailed)) campus.capture(renderer, time);
-    campus.update(fittedSpan, aspect, orbit);
+    campus.update(fittedSpan, aspect, orbit, time, response.motor);
     camera.left = -fittedSpan * aspect / 2; camera.right = -camera.left;
     camera.top = fittedSpan / 2; camera.bottom = -camera.top;
     const radius = Math.max(72, fittedSpan * 1.4);

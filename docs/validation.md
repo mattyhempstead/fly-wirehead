@@ -189,3 +189,11 @@ Removed the rear computer racks, cylindrical power columns, and their attached l
 Separated the original room's two floor slabs from the metallic environment material. They now use diffuse Lambert shading without camera-depth fog, retaining received shadows while matching the lighting captured in the repeated rooms' overhead texture. Removed random instance tint from the copied floors; wall-shell variation remains.
 
 Both edited JavaScript modules passed syntax checks and the diff passed whitespace checks. The local preview returned HTTP 200. This change was checked in source, without a new browser visual comparison.
+
+## Recognizable animated flies in nearby rooms — 2026-09-13
+
+Replaced the simplified static blobs and rectangular wings with a 670-triangle fly, compared with 3,222 triangles for the detailed model. The lightweight version keeps the original proportions, faceted red eyes, antennae, six jointed legs, head socket, and swept wings with veins. Up to 7,680 neighbouring flies render through two instanced draws. Wing vertices and normals rotate on the GPU around their own shoulder pivots; each room/station pair has its own phase, frequency, and amplitude. The original flies use the same independent rhythm scheme. The nearby tier now fades across spans 450–750, retaining models longer before the existing distant snapshots take over.
+
+Also fixed neighbouring rooms disappearing when zooming in after a pan. Their fade now accounts for the camera target projected onto the floor, preserving the original reveal while allowing close inspection of adjacent rooms.
+
+All **59 JavaScript checks** passed. New coverage verifies the polygon budget, original body bounds, wing-pivot attributes, varied wing cycles across 81 rooms, bounded instance counts without per-frame transform uploads, and visibility after horizontal or vertical panning. Browser inspection confirmed the neighbouring models, varied wing positions, and connected shared neural telemetry. A close panned view submitted 4,608 animated replicas and 4.32 million triangles at 60 fps. The completed reveal retained all 10,000 rooms, seven draw calls, 746,002 triangles, and 60 fps. There were no browser errors or warnings.

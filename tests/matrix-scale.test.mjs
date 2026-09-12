@@ -69,6 +69,15 @@ test('rooms retain their fade while the outer grid is always fully opaque', () =
   }
 });
 
+test('zooming into a panned neighbouring room keeps its models and floor visible', () => {
+  const phi = 1.1, theta = -.66;
+  for (const height of [0, 20, -20]) {
+    const target = [70 + height * Math.tan(phi) * Math.sin(theta), height, height * Math.tan(phi) * Math.cos(theta)];
+    assert.equal(revealOpacity(4, { phi, theta, target }).rooms, 1);
+  }
+  assert.equal(revealOpacity(4, { phi, theta, target: [0, 0, 0] }).rooms, 0);
+});
+
 test('rooms and block plinths are submitted before entering a padded camera frame', () => {
   const cases = [
     { span: 120, theta: -.55, phi: 1.1, aspect: 16 / 9, target: [0, 0, 0] },

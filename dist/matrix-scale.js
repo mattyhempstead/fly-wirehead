@@ -56,9 +56,15 @@ function smoothstep(value, start, end) {
   const t = clamp((value - start) / (end - start), 0, 1);
   return t * t * (3 - 2 * t);
 }
-export function revealOpacity(span) {
+export function revealOpacity(span, orbit) {
+  // Panning into another room must not hide it when the user zooms back in.
+  // Project the camera target onto the floor so vertical pans count correctly.
+  const groundOffset = orbit ? Math.hypot(
+    orbit.target[0] - orbit.target[1] * Math.tan(orbit.phi) * Math.sin(orbit.theta),
+    orbit.target[2] - orbit.target[1] * Math.tan(orbit.phi) * Math.cos(orbit.theta),
+  ) : 0;
   return {
-    rooms: smoothstep(span, 28, 110),
+    rooms: smoothstep(Math.max(span, groundOffset * 2), 28, 110),
     // The outer grid is already opaque offscreen; only the camera reveals it.
     blocks: 1,
   };
