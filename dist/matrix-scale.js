@@ -10,7 +10,9 @@ export const CAMPUS_CENTER = [-BLOCK_PITCH / 2 + BLOCK_CENTER[0], 0, -BLOCK_PITC
 export const CAMPUS_SIZE = (BLOCKS_PER_AXIS - 1) * BLOCK_PITCH + BLOCK_SIZE;
 export const BLOCK_SPAN = 800, CAMPUS_SPAN = 8500;
 export const REPRESENTED_FLIES = STATION_COUNT * ROOM_COUNT;
-export const DETAIL_SPAN = 180;
+// Keep the original room intact through both grid reveals. Its proxy is only
+// used near the end, when the whole room occupies roughly a dozen screen pixels.
+export const DETAIL_SPAN = 4000;
 
 // The original room and its 100-room block both sit in the middle of their grid.
 export const blocks = Array.from({ length: BLOCK_COUNT }, (_, id) => {
