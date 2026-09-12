@@ -9,3 +9,4 @@ __pycache__/
 /data/
 /runs/
 /dist/media/*.mp4
+/dist/media/matrix/

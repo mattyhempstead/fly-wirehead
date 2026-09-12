@@ -3,53 +3,46 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#090b0d" />
-  <meta name="description" content="A local Python/C++ fly-connectome experiment driven by shortform screen pixels, with a 3D observation chamber and measured neural telemetry." />
-  <meta property="og:title" content="FLY / WIREHEAD" />
-  <meta property="og:description" content="One fly. An infinite feed. A deeply unserious experiment in attention." />
-  <title>FLY / WIREHEAD — The attention experiment</title>
+  <meta name="theme-color" content="#101a20" />
+  <meta name="description" content="64 flies. 64 independent feeds. One shared connectome. A 3D attention factory running locally." />
+  <title>FLY / MATRIX — Attention at scale</title>
   <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="./style.css" />
   <script type="importmap">{"imports":{"three":"./vendor/three.module.js"}}</script>
 </head>
 <body>
   <header class="masthead">
-    <a class="wordmark" href="./" aria-label="Fly Wirehead home"><span class="brand-mark">⌘</span> FLY <span class="slash">/</span> WIREHEAD</a>
-    <span class="header-note">AN EXPERIMENT IN ATTENTION</span>
+    <a class="wordmark" href="./" aria-label="Fly Matrix home"><span class="brand-mark">⌘</span> FLY <span class="slash">/</span> MATRIX</a>
+    <span class="header-note">ATTENTION PROCESSING FACILITY</span>
   </header>
   <main>
     <div class="intro">
-      <h1>Born to fly. <span>Forced to scroll.</span></h1>
-      <p>A fly connectome. An endless feed.</p>
+      <div><p class="eyebrow">EXPERIMENT 003 / THE FACTORY FLOOR</p><h1>Born to fly. <span>Scaled to scroll.</span></h1></div>
+      <p class="intro-note">64 flies. Independent feeds.<br>One shared brain.</p>
     </div>
-    <section class="observation" aria-label="Live fly observation chamber">
+    <section class="observation" aria-label="Live 8 by 8 fly factory">
       <div class="scene-wrap" id="scene-wrap">
-        <canvas id="scene" tabindex="0" aria-label="Fly and phone. Drag to orbit. Space pauses; arrow keys skip; C changes camera; M toggles audio."></canvas>
-        <div class="scene-shade" aria-hidden="true"></div>
-        <div class="scene-heading">
-          <div class="brain-status"><span class="live-dot"></span><span id="top-state">BRAIN CONNECTING</span></div>
-          <p id="model-detail">Loading the local connectome…</p>
+        <canvas id="scene" tabindex="0" aria-label="64 flies in an 8 by 8 factory grid, each facing and swiping its own phone. Drag to orbit; scroll to zoom; Space pauses."></canvas>
+        <div class="floor-label" aria-hidden="true"><span class="live-dot"></span><span id="floor-state">LOADING FOOTAGE</span></div>
+        <div class="floor-index" aria-hidden="true">FLOOR 01 <span>/</span> 08 × 08</div>
+        <div class="scene-error" id="scene-error" role="alert" hidden>Your browser couldn’t start the 3D scene. A browser with WebGL 2 is required.</div>
+      </div>
+      <div class="toolbar">
+        <div class="view-buttons" role="group" aria-label="Camera view">
+          <button type="button" data-view="0" aria-pressed="true">Factory floor</button>
+          <button type="button" data-view="1" aria-pressed="false">Along the line</button>
+          <button type="button" data-view="2" aria-pressed="false">Single station</button>
         </div>
-        <div class="session-stamp"><span>EXPOSURE</span><strong id="session-time">00:00:00</strong></div>
-        <div class="scene-error" id="scene-error" role="alert" hidden>Your browser couldn’t start the 3D scene. Try a browser with WebGL enabled.</div>
-        <div class="scene-message" id="scene-message" role="status"></div>
-        <aside class="neural-overlay" aria-label="Measured neural activity">
-          <div class="overlay-heading"><span>LIVE NEURAL ACTIVITY</span><span class="live-dot"></span></div>
-          <div class="neural-metrics">
-            <div><span class="metric-label">DOPAMINE ACTIVITY</span><div class="metric-number"><strong id="dopamine-value">—</strong><span>Hz</span></div><span class="sample-label">15 PAM11 neurons</span></div>
-            <div><span class="metric-label">FLY SPIKES</span><div class="metric-number"><strong id="spike-value">—</strong></div><span class="sample-label" id="sample-label">Waiting for a sample</span></div>
-          </div>
-          <div class="neural-plots">
-            <div class="plot dopamine-plot"><div class="plot-label"><span>PAM11 FIRING RATE</span><span id="dopamine-range">WAITING FOR DATA</span></div><canvas id="dopamine-chart" role="img" aria-label="Measured firing rate of PAM11 dopamine neurons in Hz; automatically scaled, with axis bounds shown"></canvas></div>
-          </div>
-        </aside>
-        <div class="scene-status" id="engine-message" role="status"></div>
+        <span class="camera-hint">DRAG TO ORBIT · SCROLL TO ZOOM</span>
+        <div class="play-buttons"><button type="button" id="pause" aria-pressed="false">Pause floor</button><button type="button" id="fullscreen" aria-label="Enter fullscreen">⛶</button></div>
       </div>
     </section>
-    <footer>
-      <p>MaleCNS v1.0 · Real wiring, approximate dynamics.<br><span>Movement amplified from measured neural activity.</span></p>
-      <div class="credits"><a href="./media/playlist.json" target="_blank" rel="noreferrer">Video credits ↗</a><a href="https://github.com/nftechie/stonkfly" target="_blank" rel="noreferrer">Inspired by stonkfly ↗</a></div>
-    </footer>
+    <div class="under-floor">
+      <div id="brain-status"><span class="live-dot"></span><span id="brain-state">SHARED BRAIN CONNECTING</span></div>
+      <div class="neural-readout"><span id="spike-value">—</span> spikes / sample <span class="separator">·</span> <span id="input-source">Waiting for phone pixels</span></div>
+    </div>
+    <p id="engine-message" role="status"></p>
+    <footer><p>64 independent playheads across the five selected insect Shorts.<br><span>One local connectome samples the phones in rotation. Swiping is choreographed.</span></p><a href="./media/playlist.json" target="_blank" rel="noreferrer">Video credits ↗</a></footer>
   </main>
   <script type="module" src="./main.js"></script>
 </body>
