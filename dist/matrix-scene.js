@@ -136,11 +136,14 @@ export function createMatrix(canvas, feed) {
   const radii = [.034, .022, .013];
   const campus = createCampus(scene, room, screenMesh);
   let lastTextureVersion = -1, width = 0, height = 0;
-  const openingStation = stations[(ROWS - 1) * COLUMNS];
+  // Both grids have even dimensions: choose one of the four central stations
+  // in the detailed origin block, itself one of the campus's central blocks.
+  const openingStation = stations[Math.floor(ROWS / 2) * COLUMNS + Math.floor(COLUMNS / 2)];
   const views = [
     { theta: -.66, phi: .86, span: 68, target: [0, 1, 0] },
-    { theta: -.85, phi: 1.13, span: 12, target: [-8, 1.5, openingStation.z - 1.875] },
-    { theta: -.64, phi: 1.22, span: 5.4, target: [openingStation.x - .3, 1.7, openingStation.z] },
+    { theta: -.85, phi: 1.13, span: 12, target: [-8, 1.5, (ROWS / 2 - 1) * PITCH_Z] },
+    // Approach from the open side of this station's overhead supply rail.
+    { theta: -2.42, phi: .97, span: 5.4, target: [openingStation.x - .3, 1.7, openingStation.z] },
     { theta: -.55, phi: .48, span: CAMPUS_SPAN, target: [...CAMPUS_CENTER] },
   ];
   const controls = createOrbitCamera(views);

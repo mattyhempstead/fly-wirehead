@@ -113,3 +113,9 @@ The detailed room now contains 96 stations in an 8 × 12 arrangement. Its occupi
 The distant layout represents 960,000 flies visually. Only the original 96 feeds and one shared brain run independently; additional rooms use an image captured from the actual scene, instanced walls, and simplified nearby fly/phone geometry. Detail is reduced and distant blocks are added as the camera widens. The full 10,000-block browser view used three draw calls and approximately 740,000 triangles at 60 fps. An intermediate reveal sample showed 1,681 blocks at 57 fps. Connected neural telemetry and original feed playback continued; no browser errors or warnings appeared.
 
 All **49 JavaScript checks** passed, including square room dimensions, 96 unique video cycles, exact block coverage and spacing, bounded distance rendering, both reveal stages, deterministic restart, and final Three.js camera projection across portrait and landscape aspect ratios. The numerical model and sensory transport are unchanged.
+
+## Central fly opening — 2026-09-12
+
+The reveal and Single station preset now target G5, one of the four central stations in the original room. That room already occupies one of the four central positions in the 100 × 100 block grid. The opening camera approaches from the opposite side of the overhead rail, with a modest downward angle. Browser inspection of the paused opening confirmed the fly's body, head, wings, and legs are visible without a neighbouring fly or supply rail crossing them. The phone remains in frame. Replay resumed successfully, and the browser reported no errors or warnings.
+
+All **49 JavaScript checks** passed with the central opening pose used in the complete reveal check. This changes camera selection and framing only; video timing, neural input, and distant room rendering are unchanged.

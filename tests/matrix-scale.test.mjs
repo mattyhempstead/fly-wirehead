@@ -31,7 +31,7 @@ test('the extended reveal reaches the room first, continues to the campus, and s
   const views = [
     { theta: -.66, phi: .86, span: 68, target: [0, 1, 0] },
     { theta: -.85, phi: 1.13, span: 12, target: [-8, 1.5, 18.75] },
-    { theta: -.64, phi: 1.22, span: 3.35, target: [-19.75, 1.85, 20.625] },
+    { theta: -2.42, phi: .97, span: 3.35, target: [2.65, 1.85, 1.875] },
     { theta: -.55, phi: .48, span: CAMPUS_SPAN, target: [...CAMPUS_CENTER] },
   ];
   const controls = createOrbitCamera(views); controls.startReveal();
