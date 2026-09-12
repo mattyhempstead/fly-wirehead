@@ -82,11 +82,22 @@ export function createRecoveryFly() {
   // The joint orb is scaled to .055; keep the cloth at its intended model size.
   wrap.scale.setScalar(1 / .055);
   const gauze = material(0xfff9e8, { roughness: 1, metalness: 0 });
-  for (let i = 0; i < 5; i++) {
-    const strip = mesh(new THREE.CylinderGeometry(.084, .084, .043, 10), gauze, [0, (i - 2) * .035, 0], wrap);
-    strip.rotation.z = (i % 2 ? 1 : -1) * .12;
+  // Two tapered cloth sleeves meet over a soft elbow pad. Each sleeve follows
+  // its own bone, so the wrap folds with the joint instead of staying straight.
+  mesh(new THREE.SphereGeometry(.064, 12, 8), gauze, [0, 0, 0], wrap);
+  function wrappedSegment(endRadius) {
+    const segment = new THREE.Group(); wrap.add(segment);
+    mesh(new THREE.CylinderGeometry(endRadius, .063, .16, 12), gauze, [0, .08, 0], segment);
+    for (let i = 0; i < 3; i++) {
+      const distance = .055 + i * .043;
+      const radius = lerp(.063, endRadius, distance / .16);
+      const seam = mesh(new THREE.TorusGeometry(radius, .0025, 3, 12), gauze, [0, distance, 0], segment);
+      seam.rotation.x = Math.PI / 2;
+    }
+    return segment;
   }
-  box([.095, .064, .01], [.018, 0, .083], material(0xe0dccf, { roughness: 1 }), wrap);
+  const upperWrap = wrappedSegment(.052), lowerWrap = wrappedSegment(.045);
+  const wrapDirection = new THREE.Vector3();
   const tmp = new THREE.Vector3();
   let wingPhase = 0, lastPoseTime = null;
   return {
@@ -167,8 +178,11 @@ export function createRecoveryFly() {
         }
         poseBone(limb.upper, pose[0], pose[1]); limb.joint.position.set(...pose[1]);
         poseBone(limb.lower, pose[1], pose[2]); poseBone(limb.foot, pose[2], pose[3]);
+        if (limb === right) {
+          upperWrap.quaternion.setFromUnitVectors(boneUp, wrapDirection.set(...pose[0]).sub(limb.joint.position).normalize());
+          lowerWrap.quaternion.setFromUnitVectors(boneUp, wrapDirection.set(...pose[2]).sub(limb.joint.position).normalize());
+        }
       }
-      wrap.quaternion.copy(right.upper.quaternion);
       head.rotation.y = turn * .13 + Math.sin(time * .9) * .022;
       head.rotation.z = (biped ? -root.rotation.z * .7 : 0) - stumble * .12 + Math.sin(time * 1.8) * .015;
       wings.forEach((wing, i) => {

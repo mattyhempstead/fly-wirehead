@@ -102,3 +102,7 @@ All **38 JavaScript checks** passed. New checks cover alternating foot support w
 Running arms now rotate forward and back from their shoulders with a steady elbow bend, opposite the same-side foot. This replaces the short hand targets that caused the generic leg IK to push the elbows sideways. Wrists follow their forearms, the middle pair folds close to the torso, and the bandage aligns with the upper arm. Arm movement settles before the victory raise. The 1.5× playback rate and 12-second montage are unchanged.
 
 All **40 JavaScript checks** passed. The two new checks sweep complete strides and the victory transition, verifying fixed shoulders, preserved segment lengths, restrained lateral movement, bent elbows, aligned wrists, opposing swings, and continuity. The updated treadmill pose was checked in the local browser.
+
+## Flexible elbow bandage — 2026-09-12
+
+The rigid cuff is replaced by two tapered gauze sleeves joined over a rounded elbow pad. Each sleeve follows its own arm segment, so the white wrap bends around the actual joint in every pose. The close-up and running elbow were checked in the browser. All **40 JavaScript checks** pass; arm movement, playback, and neural behavior are unchanged.
