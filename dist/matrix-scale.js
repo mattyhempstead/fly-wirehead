@@ -4,7 +4,7 @@ export const BLOCK_ROWS = 100, BLOCK_COLUMNS = 100;
 export const BLOCK_COUNT = BLOCK_ROWS * BLOCK_COLUMNS;
 export const BLOCK_SIZE = 64, BLOCK_PITCH = 70;
 export const CAMPUS_CENTER = [-BLOCK_PITCH / 2, 0, -BLOCK_PITCH / 2];
-export const CAMPUS_SPAN = 9300;
+export const CAMPUS_SPAN = 7400;
 export const REPRESENTED_FLIES = STATION_COUNT * BLOCK_COUNT;
 export const DETAIL_SPAN = 180;
 

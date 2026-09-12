@@ -3,8 +3,18 @@ import { clamp } from './matrix-timeline.js';
 const copy = pose => ({ ...pose, target: [...pose.target] });
 const wrap = angle => Math.atan2(Math.sin(angle), Math.cos(angle));
 export const REVEAL_DURATION = 30;
-export const REVEAL_ROOM_TIME = 11;
 const REVEAL_HOLD = 1.4;
+const REVEAL_RAMP = .06;
+
+// Integrate a smooth speed ramp at each end. Between those brief ramps,
+// logarithmic zoom speed stays constant across the entire room/block reveal.
+function revealProgress(t) {
+  const ramp = REVEAL_RAMP;
+  if (t > 1 - ramp) return 1 - revealProgress(1 - t);
+  if (t >= ramp) return (t - ramp / 2) / (1 - ramp);
+  const x = t / ramp;
+  return ramp * (x ** 3 - .5 * x ** 4) / (1 - ramp);
+}
 
 export function createOrbitCamera(views) {
   const pose = { ...copy(views[0]), zoom: 1 };
@@ -18,18 +28,16 @@ export function createOrbitCamera(views) {
     snapshot: () => ({ ...copy(pose), view, reveal: reveal ? { elapsed: reveal.elapsed, duration: REVEAL_DURATION } : null }),
     startReveal(start = views[Math.min(2, views.length - 1)]) {
       const endView = views.length > 3 ? 3 : 0;
-      reveal = { elapsed: 0, endView, from: { ...copy(start), zoom: 1 }, room: { ...copy(views[0]), zoom: 1 }, to: { ...copy(views[endView]), zoom: 1 } };
+      reveal = { elapsed: 0, endView, from: { ...copy(start), zoom: 1 }, to: { ...copy(views[endView]), zoom: 1 } };
       Object.assign(pose, copy(reveal.from));
       destination = copy(pose); view = -1;
     },
     step(dt, paused = false) {
       if (reveal) {
         if (!paused) reveal.elapsed = Math.min(REVEAL_DURATION, reveal.elapsed + clamp(dt, 0, .05));
-        const firstLeg = reveal.elapsed <= REVEAL_ROOM_TIME;
-        const t = firstLeg ? clamp((reveal.elapsed - REVEAL_HOLD) / (REVEAL_ROOM_TIME - REVEAL_HOLD), 0, 1)
-          : clamp((reveal.elapsed - REVEAL_ROOM_TIME) / (REVEAL_DURATION - REVEAL_ROOM_TIME), 0, 1);
-        const eased = t * t * t * (t * (t * 6 - 15) + 10);
-        const from = firstLeg ? reveal.from : reveal.room, to = firstLeg ? reveal.room : reveal.to;
+        const t = clamp((reveal.elapsed - REVEAL_HOLD) / (REVEAL_DURATION - REVEAL_HOLD), 0, 1);
+        const eased = revealProgress(t);
+        const { from, to } = reveal;
         // A logarithmic pullback changes scale evenly. Recenter with the visible
         // span so the opening fly stays in frame as its neighbours are revealed.
         pose.span = from.span * Math.pow(to.span / from.span, eased);

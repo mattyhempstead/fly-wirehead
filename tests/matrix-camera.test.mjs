@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { OrthographicCamera, Vector3 } from '../dist/vendor/three.module.js';
-import { createOrbitCamera, bindOrbitInput, REVEAL_DURATION, REVEAL_ROOM_TIME } from '../dist/matrix-camera.js';
+import { createOrbitCamera, bindOrbitInput, REVEAL_DURATION } from '../dist/matrix-camera.js';
 
 const views = [
   { theta: -.66, phi: .94, span: 42, target: [0, 1, 0] },
