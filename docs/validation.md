@@ -77,3 +77,7 @@ All **32 JavaScript checks** passed, including five new checks for complete grid
 ## Rear-leg restraints — 2026-09-12
 
 All 64 flies now have a cuff on the anatomical back right lower leg, an alternating-link chain over the bench edge, and a bolted anchor on the actual factory floor. Browser inspection in the close station view verified the attached cuff, visible links, clear bench edge, and floor attachment while feeds and shared neural telemetry continued. The local preview remained at 60 fps with 15 draw calls in the main pass and no console errors or warnings. Body/head facet detail, bristles, and wing cross-veins were increased while retaining the original proportions. All **32 JavaScript checks** passed. Neural behavior and feed timing are unchanged.
+
+## Matrix containment atmosphere — 2026-09-12
+
+The factory now has darker metal surfaces, localized green lighting, bright code falling down tall rear walls, machine banks and hanging cable bundles, power columns, soft floor mist, and a subtle surveillance vignette/scanline layer. Full-color phones, red compound eyes, detailed wings, and metal restraints are retained. The new environment is cosmetic and excluded from neural input; its animations share the paused presentation clock. Browser inspection of the full floor confirmed all 64 stations and restraints, connected neural telemetry, and 60 fps with approximately 492,000 triangles and 36 draw calls in the main pass. All **32 JavaScript checks** passed; neural dynamics and video scheduling are unchanged.

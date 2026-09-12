@@ -1,6 +1,6 @@
 # Fly / Matrix
 
-**Born to fly. Scaled to scroll.**
+**Born to fly. Wired to stay.**
 
 An **8 × 8 factory floor of 64 flies**, each wired in from above and facing its own phone. Every phone has an independent clip order, playback position, and swipe timer. The front right leg moves with its phone's swipe.
 
@@ -9,6 +9,7 @@ This is the `matrix` branch of [Fly / Wirehead](https://github.com/mattyhempstea
 ## The floor
 
 - **64 stations:** aligned metal benches, overhead supply lines, station IDs, and a regular 8 × 8 layout. Each fly's back right leg has a metal cuff and linked chain running over the bench edge to a bolted floor anchor.
+- **A containment chamber:** blackened metal, green pools of light, falling code on towering walls, rear machine banks and cable bundles, power columns, drifting floor haze, and subtle surveillance scanlines. Original fly colors and full-color insect footage remain visible against the dark environment.
 - **64 independent feeds:** the five selected insect Shorts play at separate offsets and in varying orders. Swipes occur roughly every 2.6–3.5 seconds, staggered across stations.
 - **Head-on phones:** each portrait screen points directly toward its fly; the phone has no attached machinery.
 - **One shared connectome:** the browser samples the phones in rotation, submitting one display per neural observation. Measured motor activity modulates wing movement across the floor.

@@ -5,19 +5,24 @@ import { bake, builders, roundedRectangle } from './matrix-geometry.js';
 import { frontRightLegPose } from './swipe.js';
 import { createMotionResponse } from './motion.js';
 import { createRestraints } from './matrix-restraints.js';
+import { createAtmosphere } from './matrix-atmosphere.js';
 
 export function createMatrix(canvas, feed) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
   renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
-  renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.35;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.1;
   renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-  const scene = new THREE.Scene(); scene.background = new THREE.Color(0x15272d); scene.fog = new THREE.Fog(0x15272d, 65, 150);
+  const scene = new THREE.Scene(); scene.background = new THREE.Color(0x030906); scene.fog = new THREE.Fog(0x030906, 60, 148);
   const camera = new THREE.OrthographicCamera(-30, 30, 20, -20, .1, 200);
-  scene.add(new THREE.HemisphereLight(0xd3ebef, 0x405253, 2.5));
-  const sun = new THREE.DirectionalLight(0xfff0d9, 3); sun.position.set(-12, 35, 12); sun.castShadow = true;
+  scene.add(new THREE.HemisphereLight(0xb3c5a6, 0x102016, 1.2));
+  const sun = new THREE.DirectionalLight(0xd5dfc8, 2); sun.position.set(-12, 35, 12); sun.castShadow = true;
   sun.shadow.mapSize.set(2048, 2048); Object.assign(sun.shadow.camera, { left: -35, right: 35, top: 30, bottom: -30, near: 1, far: 90 });
   sun.shadow.normalBias = .04; sun.shadow.bias = -.0002; scene.add(sun);
-  const rim = new THREE.DirectionalLight(0x81d9dc, 2); rim.position.set(20, 15, -20); scene.add(rim);
+  const rim = new THREE.DirectionalLight(0x8fd49a, .95); rim.position.set(20, 15, -20); scene.add(rim);
+  const faceLight = new THREE.DirectionalLight(0xe2eee0, 1.2); faceLight.position.set(-22, 9, 22); scene.add(faceLight);
+  for (const at of [[-12, 6, 10], [12, 6, -8]]) {
+    const powerLight = new THREE.PointLight(0x6cda80, 65, 19, 2); powerLight.position.set(...at); scene.add(powerLight);
+  }
   const solid = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: .56, metalness: .32, flatShading: true });
   const wingsMaterial = new THREE.MeshStandardMaterial({ vertexColors: true, transparent: true, opacity: .57, side: THREE.DoubleSide, depthWrite: false, metalness: .2, roughness: .45 });
   function instances(geometry, material, count = STATION_COUNT, dynamic = false) {
@@ -32,13 +37,13 @@ export function createMatrix(canvas, feed) {
     mesh.instanceMatrix.needsUpdate = true;
   }
   const base = new THREE.Group(), b = builders(base);
-  b.box([5.18, .14, 3.30], [0, .74, 0], 0x55686b);
-  b.box([5.2, .035, 3.32], [0, .827, 0], 0x8fa5a3);
-  b.box([3, .022, 2.65], [-.76, .855, 0], 0x476569);
-  b.box([5.16, .035, .025], [0, .73, 1.663], 0x9cdacb);
+  b.box([5.18, .14, 3.30], [0, .74, 0], 0x1c2a23);
+  b.box([5.2, .035, 3.32], [0, .827, 0], 0x243029);
+  b.box([3, .022, 2.65], [-.76, .855, 0], 0x0e1913);
+  b.box([5.16, .035, .025], [0, .73, 1.663], 0x2c5237);
   for (const x of [-2.25, 2.25]) {
-    b.box([.11, .66, 2.6], [x, .35, 0], 0x283c41);
-    b.box([.4, .045, 2.8], [x, .03, 0], 0x14282e);
+    b.box([.11, .66, 2.6], [x, .35, 0], 0x101c16);
+    b.box([.4, .045, 2.8], [x, .03, 0], 0x0b1510);
   }
   const phone = new THREE.Group(); phone.position.set(1.12, 2.1, 0); phone.rotation.y = -Math.PI / 2; base.add(phone);
   b.mesh(new THREE.ExtrudeGeometry(roundedRectangle(1.47, 2.5, .15), { depth: .09, bevelEnabled: true, bevelSize: .013, bevelThickness: .013, bevelSegments: 2, curveSegments: 5, steps: 1 }), 0x596c73, [0, 0, -.045], phone);
@@ -49,42 +54,43 @@ export function createMatrix(canvas, feed) {
   b.box([.023, .25, .05], [.75, .43, 0], 0x7b8d8f, phone);
   // The overhead supply ends above the crown; nothing connects to the phone.
   const socketX = FLY_X + SOCKET[0] * FLY_SCALE;
-  b.rod([socketX, 3.62, -.97], [socketX, 3.62, 0], .035, 0x789b9a);
+  b.rod([socketX, 3.62, -.97], [socketX, 3.62, 0], .035, 0x536c57);
   b.rod([socketX, 3.69, 0], [socketX, 3.24, 0], .056, 0x1b363e);
   b.rod([socketX, 3.3, 0], [socketX, 3.265, 0], .060, 0xbff3ac);
   const benches = instances(bake(base), solid); positionCopies(benches);
   const factory = new THREE.Group(), f = builders(factory);
-  f.box([62, .18, 45], [0, -.13, 0], 0x253c42);
-  f.box([64, .26, 47], [0, -.33, 0], 0x0f252c);
+  f.box([62, .18, 45], [0, -.13, 0], 0x060d09);
+  f.box([64, .26, 47], [0, -.33, 0], 0x050d08);
   for (let row = 0; row < ROWS; row++) {
     const z = (row - 3.5) * PITCH_Z;
-    f.box([46, .11, .11], [0, 3.62, z - .97], 0x4c6b71);
-    f.box([44, .018, .028], [0, 3.685, z - .94], 0x91beb8);
+    f.box([46, .11, .11], [0, 3.62, z - .97], 0x2c4534);
+    f.box([44, .018, .028], [0, 3.685, z - .94], 0x5e8060);
     for (const x of [-23.1, 23.1]) {
-      f.box([.12, 3.6, .12], [x, 1.8, z - .97], 0x3d5961);
-      f.box([.30, .10, .36], [x, .05, z - .97], 0x56757a);
+      f.box([.12, 3.6, .12], [x, 1.8, z - .97], 0x243a2c);
+      f.box([.30, .10, .36], [x, .05, z - .97], 0x395143);
     }
   }
   // Clear circulation lanes and safety paint make the regular grid read as a factory.
   for (let col = 0; col <= COLUMNS; col++) {
     const x = (col - 4) * PITCH_X;
-    f.box([.035, .012, 31], [x, -.025, 0], 0x79938e);
+    f.box([.035, .012, 31], [x, -.025, 0], 0x37513d);
   }
   for (let row = 0; row <= ROWS; row++) {
     const z = (row - 4) * PITCH_Z;
-    f.box([45.4, .012, .035], [0, -.024, z], 0x567279);
+    f.box([45.4, .012, .035], [0, -.024, z], 0x29402e);
   }
   for (const z of [-16, 16]) {
-    f.box([49, .015, .075], [0, -.02, z], 0xc6b97a);
-    for (let i = -24; i < 25; i += 2) f.box([.9, .018, .22], [i, -.015, z + Math.sign(z) * .35], 0xc6b97a);
+    f.box([49, .015, .075], [0, -.02, z], 0x64704a);
+    for (let i = -24; i < 25; i += 2) f.box([.9, .018, .22], [i, -.015, z + Math.sign(z) * .35], 0x64704a);
   }
-  f.box([61, 7.5, .28], [0, 3.5, -21.4], 0x29444d);
-  f.box([.28, 7.5, 44], [30.6, 3.5, 0], 0x29444d);
+  f.box([61, 20, .28], [0, 9.75, -21.4], 0x0a160e);
+  f.box([.28, 20, 44], [30.6, 9.75, 0], 0x0a160e);
   for (let x = -28; x <= 28; x += 7) {
-    f.box([.18, 7.5, .4], [x, 3.5, -21.1], 0x41626a);
-    f.box([4.5, .13, .035], [x, 5.8, -20.92], 0xb2d9cc);
+    f.box([.18, 20, .4], [x, 9.75, -21.1], 0x1c3123);
+    f.box([4.5, .13, .035], [x, 18.7, -20.92], 0x627c59);
   }
   const environment = new THREE.Mesh(bake(factory), solid); environment.receiveShadow = true; scene.add(environment);
+  const atmosphere = createAtmosphere(scene, stations);
 
   // One texture atlas and one mesh for all 64 independently composited screens.
   const feedTexture = new THREE.CanvasTexture(feed.canvas); feedTexture.colorSpace = THREE.SRGBColorSpace;
@@ -97,7 +103,7 @@ export function createMatrix(canvas, feed) {
   }
   const screenMesh = new THREE.Mesh(bake(screens), new THREE.MeshBasicMaterial({ map: feedTexture, toneMapped: false })); scene.add(screenMesh);
   const ids = document.createElement('canvas'); ids.width = ids.height = 1024;
-  const context = ids.getContext('2d'); context.fillStyle = '#263e44'; context.fillRect(0, 0, 1024, 1024);
+  const context = ids.getContext('2d'); context.fillStyle = '#0d1d13'; context.fillRect(0, 0, 1024, 1024);
   context.font = '600 48px monospace'; context.textAlign = 'center'; context.textBaseline = 'middle'; context.fillStyle = '#bcd4cc';
   const badges = new THREE.Group(), badgeBuilder = builders(badges);
   for (const s of stations) {
@@ -157,6 +163,7 @@ export function createMatrix(canvas, feed) {
     }
     for (const batch of [bodies, ...wings, limbBones, joints, cables]) batch.instanceMatrix.needsUpdate = true;
     restraints.update();
+    atmosphere.animate(time);
     if (lastTextureVersion !== feed.version) { feedTexture.needsUpdate = true; lastTextureVersion = feed.version; }
     const smoothing = 1 - Math.exp(-Math.min(dt, .05) * 6);
     for (const key of ['theta', 'phi', 'span']) orbit[key] += (desired[key] - orbit[key]) * smoothing;
@@ -175,6 +182,6 @@ export function createMatrix(canvas, feed) {
     orbit(dx, dy) { desired.theta -= dx * .004; desired.phi = clamp(desired.phi + dy * .003, .35, 1.45); },
     zoom(delta) { zoom = clamp(zoom * Math.exp(-delta * .001), .65, 4); },
     stats() { return { stations: STATION_COUNT, phones: STATION_COUNT, restraints: restraints.count, view: cameraView, drawCalls: renderer.info.render.calls, triangles: renderer.info.render.triangles, span: fittedSpan }; },
-    dispose() { const seen = new Set(); scene.traverse(node => { for (const resource of [node.geometry, node.material]) if (resource && !seen.has(resource)) { seen.add(resource); resource.dispose(); } }); feedTexture.dispose(); idTexture.dispose(); renderer.dispose(); }
+    dispose() { const seen = new Set(); scene.traverse(node => { for (const resource of [node.geometry, node.material]) if (resource && !seen.has(resource)) { seen.add(resource); resource.dispose(); } }); atmosphere.dispose(); feedTexture.dispose(); idTexture.dispose(); renderer.dispose(); }
   };
 }
