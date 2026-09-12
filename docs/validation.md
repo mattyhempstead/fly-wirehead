@@ -95,3 +95,7 @@ Downloaded all seven additional user-selected Shorts with yt-dlp and prepared th
 Each station now repeats its own complete shuffled sequence, replacing the previous forward/reverse order with different offsets. All 64 cycles are distinct, including after normalizing their starting positions. All **42 JavaScript checks** passed, including unique permutations, every clip appearing exactly once per cycle, repeating across loop boundaries, and small collections where 64 unique cycles are impossible. Existing playhead, pause, and phone/leg synchronization checks still pass.
 
 The local browser showed all twelve source videos concurrently across 64 phones. A later snapshot showed changed clips on all 64 phones, connected shared neural input, and 60 fps, without console warnings or errors. Neural dynamics are unchanged.
+
+## Consistent pad lighting — 2026-09-12
+
+The fly pads now use their own matte Lambert material, with steady emissive fill and no camera-depth fog. This removes metallic highlights that changed with the viewing angle and keeps the darker views brighter while retaining real fly shadows. Browser inspection covered the factory overview, a lower side angle, and a close station view. The close view held 60 fps with connected neural telemetry and no console warnings or errors. This changes only the pad material and its rendering batch.
