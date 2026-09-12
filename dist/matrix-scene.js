@@ -61,24 +61,22 @@ export function createMatrix(canvas, feed) {
   b.orb([.021, .021, .007], [.17, 1.16, .074], 0x285873, phone, 0);
   b.box([.31, .014, .005], [0, -1.17, .069], 0xadbec0, phone);
   b.box([.023, .25, .05], [.75, .43, 0], 0x7b8d8f, phone);
-  // The overhead supply ends above the crown; nothing connects to the phone.
-  const socketX = FLY_X + SOCKET[0] * FLY_SCALE;
-  b.rod([socketX, 3.62, -.97], [socketX, 3.62, 0], .035, 0x536c57);
-  b.rod([socketX, 3.69, 0], [socketX, 3.24, 0], .056, 0x1b363e);
-  b.rod([socketX, 3.3, 0], [socketX, 3.265, 0], .060, 0xbff3ac);
+  // A short wire rises from each crown into a horizontal supply run. There
+  // are no tall connector stalks, crossbars, or floor-mounted rail supports.
+  const socketX = FLY_X + SOCKET[0] * FLY_SCALE, wireHeight = 2.85;
+  b.rod([socketX, wireHeight, -.065], [socketX, wireHeight, .065], .048, 0x536c57);
   const benches = instances(bake(base), solid); positionCopies(benches);
   const factory = new THREE.Group(), f = builders(factory);
   f.box([62, .18, 62], [0, -.13, 0], 0x060d09);
   f.box([64, .26, 64], [0, -.33, 0], 0x050d08);
-  for (let row = 0; row < ROWS; row++) {
-    const z = (row - (ROWS - 1) / 2) * PITCH_Z;
-    f.box([46, .11, .11], [0, 3.62, z - .97], 0x2c4534);
-    f.box([44, .018, .028], [0, 3.685, z - .94], 0x5e8060);
-    for (const x of [-23.1, 23.1]) {
-      f.box([.12, 3.6, .12], [x, 1.8, z - .97], 0x243a2c);
-      f.box([.30, .10, .36], [x, .05, z - .97], 0x395143);
-    }
+  const supplyBack = -26.72, supplyFront = (ROWS - 1) / 2 * PITCH_Z + .7;
+  for (let column = 0; column < COLUMNS; column++) {
+    const x = (column - (COLUMNS - 1) / 2) * PITCH_X + socketX;
+    f.rod([x, wireHeight, supplyBack], [x, wireHeight, supplyFront], .028, 0x536c57);
   }
+  // The collector stays in the same horizontal plane, at the rear racks.
+  const supplyHalfWidth = (COLUMNS - 1) / 2 * PITCH_X + .7;
+  f.rod([socketX - supplyHalfWidth, wireHeight, supplyBack], [socketX + supplyHalfWidth, wireHeight, supplyBack], .042, 0x536c57);
   // Clear circulation lanes and safety paint make the regular grid read as a factory.
   for (let col = 0; col <= COLUMNS; col++) {
     const x = (col - COLUMNS / 2) * PITCH_X;
@@ -99,7 +97,7 @@ export function createMatrix(canvas, feed) {
     f.box([4.5, .13, .035], [x, 18.7, -29.92], 0x627c59);
   }
   const environment = new THREE.Mesh(bake(factory), solid); environment.receiveShadow = true; room.add(environment);
-  const atmosphere = createAtmosphere(room, stations);
+  const atmosphere = createAtmosphere(room, stations, { socketX, wireHeight });
 
   // One texture atlas and one mesh for all independently composited screens.
   const feedTexture = new THREE.CanvasTexture(feed.canvas); feedTexture.colorSpace = THREE.SRGBColorSpace;
@@ -177,7 +175,8 @@ export function createMatrix(canvas, feed) {
         }
         part.position.set(...points[1]); part.rotation.set(0, 0, 0); part.scale.setScalar(1); part.updateMatrix();
         matrix.multiplyMatrices(body.matrix, part.matrix); joints.setMatrixAt(s.id, matrix);
-        socket.set(...SOCKET).applyMatrix4(body.matrix); start.set(s.x + socketX, 3.26, s.z);
+        socket.set(...SOCKET).applyMatrix4(body.matrix);
+        start.copy(socket); start.y = wireHeight;
         part.position.copy(start).add(socket).multiplyScalar(.5); end.copy(socket).sub(start);
         part.quaternion.setFromUnitVectors(up, end.clone().normalize()); part.scale.set(1, end.length(), 1); part.updateMatrix(); cables.setMatrixAt(s.id, part.matrix);
       }

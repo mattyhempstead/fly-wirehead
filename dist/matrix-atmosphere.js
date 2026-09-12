@@ -3,7 +3,7 @@ import { bake, builders } from './matrix-geometry.js';
 import { random } from './matrix-timeline.js';
 
 // Environmental animation only; it never enters the phones or neural input.
-export function createAtmosphere(scene, stations) {
+export function createAtmosphere(scene, stations, { socketX, wireHeight }) {
   const steel = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: .43, metalness: .58 });
   const emission = new THREE.MeshBasicMaterial({ color: 0x8df578, toneMapped: false });
   const hardware = new THREE.Group(), h = builders(hardware);
@@ -42,7 +42,8 @@ export function createAtmosphere(scene, stations) {
   const stationLight = new THREE.Group(), lightBuilder = builders(stationLight);
   lightBuilder.box([4.7, .021, .033], [0, .717, 1.669], 0xffffff);
   lightBuilder.box([.28, .012, .025], [-1.92, .873, 1.15], 0xffffff);
-  lightBuilder.mesh(new THREE.CylinderGeometry(.044, .044, .03, 8), 0xffffff, [-.2964, 3.27, 0]);
+  const junctionLight = lightBuilder.mesh(new THREE.CylinderGeometry(.049, .049, .022, 8), 0xffffff, [socketX, wireHeight, 0]);
+  junctionLight.rotation.x = Math.PI / 2;
   const strips = new THREE.InstancedMesh(bake(stationLight), emission, stations.length), transform = new THREE.Object3D();
   strips.frustumCulled = false;
   for (const s of stations) { transform.position.set(s.x, 0, s.z); transform.updateMatrix(); strips.setMatrixAt(s.id, transform.matrix); }

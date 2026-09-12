@@ -8,7 +8,7 @@ This is the `matrix` branch of [Fly / Wirehead](https://github.com/mattyhempstea
 
 ## The floor
 
-- **96 stations:** aligned metal benches, overhead supply lines, station IDs, and a regular 8 × 12 layout. Each fly's back right leg has a metal cuff and linked chain running over the bench edge to a bolted floor anchor.
+- **96 stations:** aligned metal benches, station IDs, and a regular 8 × 12 layout. A short wire rises from each head into a thin horizontal supply line; the lines meet a horizontal collector at the rear racks. Each fly's back right leg has a metal cuff and linked chain running over the bench edge to a bolted floor anchor.
 - **A containment chamber:** blackened metal, green pools of light, falling code on towering walls, rear machine banks and cable bundles, power columns, drifting floor haze, and subtle surveillance scanlines. Original fly colors and full-color insect footage remain visible against the dark environment.
 - **96 independent feeds:** each fly has its own unique shuffled loop through all twelve insect Shorts, playing every clip once before repeating. Playback offsets and swipe timers are independent. Swipes occur roughly every 2.6–3.5 seconds, staggered across stations.
 - **Head-on phones:** each portrait screen points directly toward its fly; the phone has no attached machinery.
