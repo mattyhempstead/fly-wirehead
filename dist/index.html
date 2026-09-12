@@ -31,7 +31,7 @@
           <p id="model-detail">Loading the local connectome…</p>
         </div>
         <div class="session-stamp"><span id="drive-state">CONNECTING</span><strong id="session-time">00:00</strong></div>
-        <div class="recovery-stage"><div class="stage-kicker">RECOVERY <span id="stage-number">01 / 05</span></div><h2 id="stage-title">Unplugged</h2><div class="stage-track" aria-hidden="true"><i class="stage-tick active"></i><i class="stage-tick"></i><i class="stage-tick"></i><i class="stage-tick"></i><i class="stage-tick"></i></div><button id="replay" hidden>Replay sequence ↺</button></div>
+        <div class="recovery-stage"><div class="stage-kicker">RECOVERY <span id="stage-number">01 / 05</span></div><h2 id="stage-title">Unplugged</h2><div class="stage-track" aria-hidden="true"><i class="stage-tick active"></i><i class="stage-tick"></i><i class="stage-tick"></i><i class="stage-tick"></i><i class="stage-tick"></i></div></div>
         <div class="scene-error" id="scene-error" role="alert" hidden>Your browser couldn’t start the 3D scene. Try a browser with WebGL enabled.</div>
         <div class="scene-message" id="scene-message" role="status"></div>
         <aside class="neural-overlay" aria-label="Measured neural activity">
@@ -47,6 +47,10 @@
         <div class="scene-status" id="engine-message" role="status"></div>
       </div>
     </section>
+    <div class="sequence-controls">
+      <button id="play-sequence" type="button" disabled><span aria-hidden="true">▶</span> Play full sequence</button>
+      <span>From the beginning · 5 scenes · 64 seconds</span>
+    </div>
     <footer>
       <p>MaleCNS v1.0 · Real wiring, approximate dynamics.<br><span>Live eye-view input. Choreographed gait with measured motor responses.</span></p>
       <div class="credits"><span>F–001 / RECOVERY</span><a href="https://github.com/nftechie/stonkfly" target="_blank" rel="noreferrer">Inspired by stonkfly ↗</a></div>

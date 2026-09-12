@@ -55,7 +55,7 @@ The numerical wiring is reconstructed; the physiology, visual projection, and pl
 | C / F | Reset the camera / fullscreen |
 | S | Save the brain |
 
-A replay button appears after the final scene. Camera cuts restore the planned framing. Reduced-motion preferences start the simulation paused and omit the cyclic gait; hidden tabs stop the presentation clock and new neural observations.
+The **Play full sequence** button below the simulation starts all five scenes from the beginning, resuming if paused. It remains available to replay after the final scene. Camera cuts restore the planned framing. Reduced-motion preferences start the simulation paused and omit the cyclic gait; hidden tabs stop the presentation clock and new neural observations.
 
 Checkpoints save periodically and on **Ctrl-C**. Measurements, input/spike hashes, and the latest eye-view image are stored under `runs/recovery`. Data, checkpoints, and local run logs are ignored by Git.
 

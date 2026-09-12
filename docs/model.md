@@ -38,7 +38,7 @@ The existing experimental plasticity rule can modify 7,835 KC→MBON07/11 edges.
 - `latest.json`: that sample's telemetry.
 - `provenance.json`: source locks, model, visual-source description, and stimulation policy.
 
-Space pauses, arrows change scenes, R replays, C resets the camera, F enters fullscreen, and S requests a checkpoint. The optional `control_fly_recovery` WebMCP tool exposes those scene/brain actions. A final replay button leaves the completed victory pose in view until requested. Hidden tabs provide no new observations. Reduced-motion preferences begin paused and omit cyclic gait. Three.js is vendored; Google Fonts are optional with system fallbacks.
+Space pauses, arrows change scenes, R replays, C resets the camera, F enters fullscreen, and S requests a checkpoint. The optional `control_fly_recovery` WebMCP tool exposes those scene/brain actions. An always-visible **Play full sequence** button outside and below the chamber resets presentation time and resumes the brain to run all five scenes. It preserves the neural state and unplugging latch. The completed victory pose holds until replay is requested. Hidden tabs provide no new observations. Reduced-motion preferences begin paused and omit cyclic gait. Three.js is vendored; Google Fonts are optional with system fallbacks.
 
 ## Verification and sources
 

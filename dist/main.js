@@ -36,16 +36,24 @@ function showMessage(text) {
 }
 async function command(action) {
   if (commandPending) return false;
-  commandPending = true;
+  commandPending = true; updateLabels();
   try { await client.action(action); return true; }
   catch (error) { showMessage(error.message); return false; }
-  finally { commandPending = false; }
+  finally { commandPending = false; updateLabels(); }
 }
 function setScene(index) {
   state.time = SCENES[Math.max(0, Math.min(SCENES.length - 1, index))].start;
   current = recoveryFrame(state.time); sceneRendered = false; lab?.resetCamera(); updateLabels();
 }
 function restart() { setScene(0); }
+async function playSequence() {
+  if (sceneFailed || status?.phase !== 'ready' || commandPending) return;
+  if (await command('resume')) {
+    restart();
+    canvas.focus({ preventScroll: true });
+    $('#scene-wrap').scrollIntoView({ block: 'start', behavior: reducedMotion ? 'auto' : 'smooth' });
+  }
+}
 function updateLabels() {
   const t = status?.telemetry, ready = status?.phase === 'ready';
   $('#dopamine-value').textContent = Number.isFinite(t?.pam11_hz) ? t.pam11_hz.toFixed(1) : '—';
@@ -59,7 +67,8 @@ function updateLabels() {
   $('#stage-title').textContent = current.title;
   $('#drive-state').textContent = !ready ? 'CONNECTING' : status.stimulation_attached ? 'STIMULATION ATTACHED' : 'STIMULATION OFF';
   document.querySelectorAll('.stage-tick').forEach((tick, i) => tick.classList.toggle('active', i <= current.index));
-  $('#replay').hidden = !current.ended;
+  $('#play-sequence').disabled = !ready || sceneFailed || commandPending;
+  $('#play-sequence').setAttribute('aria-busy', String(commandPending));
   $('#engine-message').textContent = sceneFailed ? 'Visual input suspended' : status?.paused ? 'Simulation paused · Space to resume' : ready ? '' : connectionError || '';
   document.body.classList.toggle('paused', Boolean(status?.paused));
   document.body.classList.toggle('disconnected', !ready);
@@ -68,7 +77,7 @@ async function fullscreen() {
   try { if (document.fullscreenElement) await document.exitFullscreen(); else await $('#scene-wrap').requestFullscreen(); }
   catch { showMessage('Fullscreen unavailable in this view'); }
 }
-$('#replay').addEventListener('click', restart);
+$('#play-sequence').addEventListener('click', playSequence);
 document.addEventListener('keydown', event => {
   if (event.altKey || event.ctrlKey || event.metaKey || document.activeElement?.closest('input, textarea, select, button, a, [contenteditable="true"]')) return;
   if (['Space', 'ArrowRight', 'ArrowLeft', 'ArrowDown', 'ArrowUp', 'KeyR', 'KeyC', 'KeyF', 'KeyS'].includes(event.code)) event.preventDefault();
