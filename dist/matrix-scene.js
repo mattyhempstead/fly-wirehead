@@ -1,11 +1,12 @@
 import * as THREE from 'three';
-import { stations, ROWS, COLUMNS, STATION_COUNT, PITCH_X, PITCH_Z, clamp } from './matrix-timeline.js';
+import { stations, ROWS, COLUMNS, STATION_COUNT, PITCH_X, PITCH_Z } from './matrix-timeline.js';
 import { flyGeometry, FLY_SCALE, FLY_X, FLY_Y, SOCKET } from './matrix-fly.js';
 import { bake, builders, roundedRectangle } from './matrix-geometry.js';
 import { frontRightLegPose } from './swipe.js';
 import { createMotionResponse } from './motion.js';
 import { createRestraints } from './matrix-restraints.js';
 import { createAtmosphere } from './matrix-atmosphere.js';
+import { createOrbitCamera } from './matrix-camera.js';
 
 export function createMatrix(canvas, feed) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
@@ -125,14 +126,14 @@ export function createMatrix(canvas, feed) {
   const body = new THREE.Object3D(), part = new THREE.Object3D(), matrix = new THREE.Matrix4();
   const start = new THREE.Vector3(), end = new THREE.Vector3(), up = new THREE.Vector3(0, 1, 0), socket = new THREE.Vector3();
   const radii = [.034, .022, .013];
-  let lastTextureVersion = -1, width = 0, height = 0, cameraView = 0;
+  let lastTextureVersion = -1, width = 0, height = 0;
   const views = [
     { theta: -.66, phi: .94, span: 42, target: [0, 1, 0] },
     { theta: -.85, phi: 1.13, span: 12, target: [-8, 1.5, 11.25] },
     { theta: -.64, phi: 1.22, span: 5.4, target: [stations[56].x - .3, 1.7, stations[56].z] },
   ];
-  const orbit = { ...views[0], target: [...views[0].target] }, desired = { ...orbit, target: [...orbit.target] };
-  let zoom = 1, fittedSpan = 42;
+  const controls = createOrbitCamera(views);
+  let fittedSpan = 42;
   function render(time, dt, state) {
     const rect = canvas.getBoundingClientRect();
     if (rect.width !== width || rect.height !== height) { width = rect.width; height = rect.height; renderer.setSize(width, height, false); }
@@ -165,11 +166,9 @@ export function createMatrix(canvas, feed) {
     restraints.update();
     atmosphere.animate(time);
     if (lastTextureVersion !== feed.version) { feedTexture.needsUpdate = true; lastTextureVersion = feed.version; }
-    const smoothing = 1 - Math.exp(-Math.min(dt, .05) * 6);
-    for (const key of ['theta', 'phi', 'span']) orbit[key] += (desired[key] - orbit[key]) * smoothing;
-    orbit.target = orbit.target.map((n, i) => n + (desired.target[i] - n) * smoothing);
+    const orbit = controls.step(dt);
     const aspect = width / Math.max(1, height), fit = Math.max(1, 1.48 / aspect);
-    fittedSpan = orbit.span * fit / zoom;
+    fittedSpan = orbit.span * fit / orbit.zoom;
     camera.left = -fittedSpan * aspect / 2; camera.right = -camera.left;
     camera.top = fittedSpan / 2; camera.bottom = -camera.top; camera.updateProjectionMatrix();
     const radius = 72;
@@ -178,10 +177,11 @@ export function createMatrix(canvas, feed) {
   }
   return {
     render,
-    setView(index) { cameraView = clamp(index, 0, views.length - 1); Object.assign(desired, views[cameraView], { target: [...views[cameraView].target] }); zoom = 1; return cameraView; },
-    orbit(dx, dy) { desired.theta -= dx * .004; desired.phi = clamp(desired.phi + dy * .003, .35, 1.45); },
-    zoom(delta) { zoom = clamp(zoom * Math.exp(-delta * .001), .65, 4); },
-    stats() { return { stations: STATION_COUNT, phones: STATION_COUNT, restraints: restraints.count, view: cameraView, drawCalls: renderer.info.render.calls, triangles: renderer.info.render.triangles, span: fittedSpan }; },
+    setView: controls.setView,
+    beginOrbit: controls.beginOrbit,
+    orbit: controls.orbit,
+    zoom: controls.zoom,
+    stats() { return { stations: STATION_COUNT, phones: STATION_COUNT, restraints: restraints.count, view: controls.snapshot().view, camera: controls.snapshot(), drawCalls: renderer.info.render.calls, triangles: renderer.info.render.triangles, span: fittedSpan }; },
     dispose() { const seen = new Set(); scene.traverse(node => { for (const resource of [node.geometry, node.material]) if (resource && !seen.has(resource)) { seen.add(resource); resource.dispose(); } }); atmosphere.dispose(); feedTexture.dispose(); idTexture.dispose(); renderer.dispose(); }
   };
 }

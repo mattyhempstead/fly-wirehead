@@ -30,6 +30,8 @@ The experimental plasticity rule can modify 7,835 existing KC→MBON07/11 connec
 
 The buttons below the scene select the factory, a row, or one station; pause the floor; and toggle fullscreen. Drag to orbit, scroll to zoom, Space to pause, C to change view, and F for fullscreen. Reduced-motion preferences start the floor paused and omit the swipe gesture and sliding transition.
 
+Dragging grabs the scene in both axes and stops immediately on release. Sensitivity follows the canvas height and decreases in close views and at higher zoom. A drag interrupts a preset transition at the currently displayed pose; selecting another preset turns along the shortest arc and smoothly restores its zoom. The camera stays above the floor without flipping over.
+
 `runs/matrix/brain.npz` retains neural state and plastic weights. It is independent of `runs/local` and `runs/recovery`. Checkpoints save every two active minutes, on a WebMCP save request, and on Ctrl-C. An explicitly supplied `--run-dir` overrides the default. `--fresh` starts over in that directory and will replace its checkpoint when saved.
 
 `events.jsonl` contains actual measurements and image/spike hashes; `latest-input.png` holds the most recent phone pixels; `latest.json` contains the last result. One browser window owns sensory submission at a time. A second may take over after four seconds without input from the first. The HTTP server binds to loopback and validates local origins and session tokens.

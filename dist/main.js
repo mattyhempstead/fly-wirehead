@@ -3,6 +3,7 @@ import { MatrixFeed } from './matrix-feed.js';
 import { createPlayback, createFrameClock } from './simulation.js';
 import { BrainClient } from './backend.js';
 import { STATION_COUNT } from './matrix-timeline.js';
+import { bindOrbitInput } from './matrix-camera.js';
 
 const $ = selector => document.querySelector(selector), canvas = $('#scene');
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -49,14 +50,7 @@ async function fullscreen() {
 $('#pause').addEventListener('click', () => void togglePause());
 $('#fullscreen').addEventListener('click', () => void fullscreen());
 document.querySelectorAll('[data-view]').forEach(button => button.addEventListener('click', () => setView(Number(button.dataset.view))));
-let pointer = null;
-canvas.addEventListener('pointerdown', event => { if (event.button !== 0) return; pointer = { id: event.pointerId, x: event.clientX, y: event.clientY }; canvas.setPointerCapture(event.pointerId); });
-canvas.addEventListener('pointermove', event => {
-  if (pointer?.id !== event.pointerId) return;
-  lab?.orbit(event.clientX - pointer.x, event.clientY - pointer.y); pointer.x = event.clientX; pointer.y = event.clientY;
-});
-for (const name of ['pointerup', 'pointercancel', 'lostpointercapture']) canvas.addEventListener(name, () => pointer = null);
-canvas.addEventListener('wheel', event => { event.preventDefault(); lab?.zoom(event.deltaY); }, { passive: false });
+const unbindOrbit = lab ? bindOrbitInput(canvas, lab) : () => {};
 document.addEventListener('keydown', event => {
   if (event.metaKey || event.ctrlKey || event.altKey || /INPUT|TEXTAREA|SELECT|BUTTON|A/.test(document.activeElement?.tagName)) return;
   if (['Space', 'KeyC', 'KeyF'].includes(event.code)) event.preventDefault();
@@ -85,7 +79,7 @@ function frame(now) {
   requestAnimationFrame(frame);
 }
 updateLabels(); requestAnimationFrame(frame); void feed.load().then(updateLabels); client.start();
-window.addEventListener('pagehide', () => { client.stop(); feed.dispose(); lab?.dispose(); }, { once: true });
+window.addEventListener('pagehide', () => { unbindOrbit(); client.stop(); feed.dispose(); lab?.dispose(); }, { once: true });
 if (document.modelContext?.registerTool) {
   const lifecycle = new AbortController();
   try {

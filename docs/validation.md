@@ -81,3 +81,9 @@ All 64 flies now have a cuff on the anatomical back right lower leg, an alternat
 ## Matrix containment atmosphere — 2026-09-12
 
 The factory now has darker metal surfaces, localized green lighting, bright code falling down tall rear walls, machine banks and hanging cable bundles, power columns, soft floor mist, and a subtle surveillance vignette/scanline layer. Full-color phones, red compound eyes, detailed wings, and metal restraints are retained. The new environment is cosmetic and excluded from neural input; its animations share the paused presentation clock. Browser inspection of the full floor confirmed all 64 stations and restraints, connected neural telemetry, and 60 fps with approximately 492,000 triangles and 36 draw calls in the main pass. All **32 JavaScript checks** passed; neural dynamics and video scheduling are unchanged.
+
+## Camera dragging — 2026-09-12
+
+Corrected the reversed vertical drag and removed delayed camera motion after dragging. Direct input takes over at the displayed pose, including during a preset transition. Drag sensitivity now follows viewport height and decreases with closer framing; preset resets take the shortest angular path and interpolate zoom. Pointer capture handles release, cancellation, lost capture, and secondary touches; wheel input respects pixel, line, and page units.
+
+All **39 JavaScript checks** passed. Seven new checks cover actual Three.js screen projection in both drag axes at five headings, stopping without drift, interrupted presets, viewport/zoom sensitivity, shortest turns, tilt/zoom limits, pointer lifecycle, and wheel units. In the live browser, a diagonal drag and its reverse restored the original factory angles, and the camera remained unchanged after release. A close-up drag at 1.34× zoom moved more gently; rendering held 60 fps with connected neural telemetry and no console warnings or errors. Neural code and feed scheduling were unchanged.
