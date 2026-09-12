@@ -171,7 +171,7 @@ export function createMatrix(canvas, feed) {
     restraints.update();
     atmosphere.animate(time);
     if (lastTextureVersion !== feed.version) { feedTexture.needsUpdate = true; lastTextureVersion = feed.version; }
-    const orbit = controls.step(dt);
+    const orbit = controls.step(dt, state.paused);
     const aspect = width / Math.max(1, height), fit = Math.max(1, 1.48 / aspect);
     fittedSpan = orbit.span * fit / orbit.zoom;
     camera.left = -fittedSpan * aspect / 2; camera.right = -camera.left;
@@ -182,6 +182,8 @@ export function createMatrix(canvas, feed) {
   }
   return {
     render,
+    startReveal() { controls.startReveal({ ...views[2], span: 3.35, target: [stations[56].x - .15, 1.85, stations[56].z] }); },
+    cameraState: controls.snapshot,
     setView: controls.setView,
     beginOrbit: controls.beginOrbit,
     orbit: controls.orbit,

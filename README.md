@@ -14,6 +14,7 @@ This is the `matrix` branch of [Fly / Wirehead](https://github.com/mattyhempstea
 - **Head-on phones:** each portrait screen points directly toward its fly; the phone has no attached machinery.
 - **One shared connectome:** the browser samples the phones in rotation, submitting one display per neural observation. Measured motor activity modulates wing movement across the floor.
 - **Three camera views:** factory floor, along the line, and a single station. Drag to orbit, scroll to zoom, and use the buttons below the view to pause or enter fullscreen.
+- **A camera reveal:** press **Play reveal** below the simulation for a 16-second shot that opens on one fly, then smoothly pulls back to all 64. Replay it whenever you like; dragging, scrolling, or choosing a view takes over the camera.
 
 The demonstration uses twelve source videos with 64 independent playheads, rather than 64 unique source videos. The fourth-second limit on `PBWmPoLjVvA` is preserved. There is no video audio in this branch.
 
@@ -52,9 +53,10 @@ Swiping, breathing, and clip selection are choreographed. The model uses reconst
 | Input | Action |
 | --- | --- |
 | View buttons / C | Factory, row, or single-station view |
+| Play / Replay reveal | Start the close-up-to-factory animation; resumes a paused floor |
 | Drag | Orbit |
 | Scroll | Zoom |
-| Pause button / Space | Pause or resume the floor and neural input |
+| Pause button / Space | Pause or resume the floor, camera reveal, and neural input |
 | Fullscreen button / F | Toggle fullscreen |
 
 Optional WebMCP controls expose the same actions, a measured status snapshot, and a brain checkpoint action. Checkpoints also save every two active minutes and on shutdown.

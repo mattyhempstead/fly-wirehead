@@ -99,3 +99,9 @@ The local browser showed all twelve source videos concurrently across 64 phones.
 ## Consistent pad lighting — 2026-09-12
 
 The fly pads now use their own matte Lambert material, with steady emissive fill and no camera-depth fog. This removes metallic highlights that changed with the viewing angle and keeps the darker views brighter while retaining real fly shadows. Browser inspection covered the factory overview, a lower side angle, and a close station view. The close view held 60 fps with connected neural telemetry and no console warnings or errors. This changes only the pad material and its rendering batch.
+
+## Single-fly camera reveal — 2026-09-12
+
+The new Play reveal button is outside the scene, in the existing toolbar. Its 16-second sequence holds on a close station for 1.4 seconds, then pulls back and recenters smoothly on the full 8 × 8 grid. Completion restores the factory preset and changes the button to Replay reveal; restarting begins at the same close-up. Pause holds the reveal clock, and direct camera input cancels the sequence at its displayed pose.
+
+All **45 JavaScript checks** passed. New checks cover the opening hold, continuous widening, exact final framing without drift, pause/resume, deterministic restart, and cancellation through drag, zoom, and presets. The actual browser button produced the close-up and completed at the full grid, with the Replay label, 60 fps, and connected neural telemetry. Neural dynamics and independent video sequences are unchanged.

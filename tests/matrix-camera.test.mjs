@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { OrthographicCamera, Vector3 } from '../dist/vendor/three.module.js';
-import { createOrbitCamera, bindOrbitInput } from '../dist/matrix-camera.js';
+import { createOrbitCamera, bindOrbitInput, REVEAL_DURATION } from '../dist/matrix-camera.js';
 
 const views = [
   { theta: -.66, phi: .94, span: 42, target: [0, 1, 0] },
@@ -74,6 +74,58 @@ test('large drags and wheel deltas stay upright, bounded, and finite', () => {
     assert.ok(Math.abs(pose.theta) <= Math.PI);
     assert.ok(pose.phi >= .35 && pose.phi <= 1.45);
     assert.ok(pose.zoom >= .65 && pose.zoom <= 4);
+  }
+});
+
+test('reveal holds on one fly, pulls back continuously, and stops exactly at the full factory', () => {
+  const controls = createOrbitCamera(views), start = { ...views[2], span: 3.35 };
+  controls.startReveal(start);
+  const opening = controls.snapshot();
+  for (let i = 0; i < 60; i++) controls.step(1 / 60);
+  assert.equal(controls.snapshot().span, opening.span);
+  assert.deepEqual(controls.snapshot().target, opening.target);
+  let previous = controls.snapshot(), widestStep = 0;
+  for (let i = 0; i < REVEAL_DURATION * 60 + 2; i++) {
+    const pose = controls.step(1 / 60);
+    assert.ok(pose.span >= previous.span && pose.span <= views[0].span);
+    widestStep = Math.max(widestStep, Math.abs(Math.log(pose.span / previous.span)));
+    assert.ok(pose.target[0] >= previous.target[0]);
+    assert.ok(pose.target[2] <= previous.target[2]);
+    previous = pose;
+  }
+  assert.ok(widestStep < .006, 'scale must not jump between frames');
+  assert.deepEqual(controls.snapshot(), { ...views[0], zoom: 1, view: 0, reveal: null });
+  const final = controls.snapshot();
+  for (let i = 0; i < 60; i++) assert.deepEqual(controls.step(1 / 60), final);
+});
+
+test('pause holds reveal time and pose; restart returns to the same opening', () => {
+  const controls = createOrbitCamera(views);
+  controls.startReveal(); const opening = controls.snapshot();
+  for (let i = 0; i < 240; i++) controls.step(1 / 60);
+  const beforePause = controls.snapshot();
+  assert.ok(beforePause.span > opening.span);
+  for (let i = 0; i < 120; i++) assert.deepEqual(controls.step(1 / 60, true), beforePause);
+  assert.ok(controls.step(1 / 60).span > beforePause.span);
+  controls.startReveal(); assert.deepEqual(controls.snapshot(), opening);
+});
+
+test('manual camera input cancels a reveal at its displayed pose without restarting it', () => {
+  for (const action of ['beginOrbit', 'orbit', 'zoom', 'setView']) {
+    const controls = createOrbitCamera(views); controls.startReveal();
+    for (let i = 0; i < 240; i++) controls.step(1 / 60);
+    const before = controls.snapshot();
+    if (action === 'orbit') controls.orbit(0, 0, 800);
+    else if (action === 'zoom') controls.zoom(0);
+    else if (action === 'setView') controls.setView(1);
+    else controls.beginOrbit();
+    assert.equal(controls.snapshot().reveal, null);
+    assert.equal(controls.snapshot().span, before.span);
+    assert.deepEqual(controls.snapshot().target, before.target);
+    if (action !== 'setView') {
+      const stopped = controls.snapshot();
+      for (let i = 0; i < 60; i++) assert.deepEqual(controls.step(1 / 60), stopped);
+    }
   }
 });
 

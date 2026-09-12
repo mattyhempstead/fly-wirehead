@@ -18,4 +18,5 @@ body{background:radial-gradient(ellipse at 50% -25%,#15291a 0,transparent 58%),v
 .floor-label,.floor-index{text-shadow:0 0 10px #66bf5333,0 1px 4px #000}
 .toolbar button{font-family:var(--mono);font-size:12px;border-radius:2px}
 .toolbar button[aria-pressed=true]{box-shadow:0 0 18px #8bff5b13}.scene-wrap:fullscreen:after{opacity:.8}
+#reveal{background:#97ee75;border-color:#97ee75;color:#10200b;white-space:nowrap}#reveal:hover{background:#b2f994}#reveal:disabled{opacity:.4;cursor:default}.play-buttons{align-items:center}.toolbar{flex-wrap:wrap}.view-buttons{flex-wrap:wrap}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}.toolbar button{transition:none}}

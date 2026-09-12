@@ -11,6 +11,7 @@ const playback = createPlayback(), state = playback.state;
 const feed = new MatrixFeed({ reducedMotion });
 let lab, status = null, connection = 'CONNECTING', paused = reducedMotion, failed = false, sceneRendered = false, view = 0;
 let commandPending = false, frames = 0, fpsElapsed = 0, fps = 0;
+let revealPlayed = false;
 try { lab = createMatrix(canvas, feed); }
 catch (error) { failed = true; console.error(error); $('#scene-error').hidden = false; }
 const client = new BrainClient({
@@ -32,6 +33,7 @@ function updateLabels() {
   $('#floor-state').textContent = !feed.ready ? 'LOADING FOOTAGE' : paused ? 'FLOOR PAUSED' : '64 STATIONS ONLINE';
   $('#engine-message').textContent = feed.error || (connection === 'OFFLINE' ? 'Visual demonstration running. Start the local Python server to connect the shared brain.' : status?.phase === 'loading' ? 'The floor is running while the local connectome loads.' : '');
   if (feed.error) { $('#scene-error').textContent = feed.error; $('#scene-error').hidden = false; }
+  updateCameraControls();
 }
 async function togglePause() {
   paused = !paused; updateLabels();
@@ -40,8 +42,20 @@ async function togglePause() {
   }
 }
 function setView(index) {
-  view = lab?.setView(index) ?? 0;
+  lab?.setView(index); updateCameraControls();
+}
+function updateCameraControls() {
+  const camera = lab?.cameraState();
+  view = camera?.view ?? 0;
   document.querySelectorAll('[data-view]').forEach(button => button.setAttribute('aria-pressed', String(Number(button.dataset.view) === view)));
+  $('#reveal').textContent = camera?.reveal ? 'Restart reveal' : revealPlayed ? 'Replay reveal' : 'Play reveal';
+  $('#reveal').disabled = !feed.ready || failed;
+}
+async function startReveal() {
+  if (!feed.ready || failed) return;
+  lab.startReveal(); revealPlayed = true;
+  updateCameraControls();
+  if (paused) await togglePause();
 }
 async function fullscreen() {
   try { if (document.fullscreenElement) await document.exitFullscreen(); else await $('#scene-wrap').requestFullscreen(); }
@@ -49,6 +63,7 @@ async function fullscreen() {
 }
 $('#pause').addEventListener('click', () => void togglePause());
 $('#fullscreen').addEventListener('click', () => void fullscreen());
+$('#reveal').addEventListener('click', () => void startReveal());
 document.querySelectorAll('[data-view]').forEach(button => button.addEventListener('click', () => setView(Number(button.dataset.view))));
 const unbindOrbit = lab ? bindOrbitInput(canvas, lab) : () => {};
 document.addEventListener('keydown', event => {
@@ -85,8 +100,8 @@ if (document.modelContext?.registerTool) {
   try {
     Promise.resolve(document.modelContext.registerTool({
       name: 'control_fly_matrix', title: 'Control the fly matrix demonstration',
-      description: 'Inspect 64 independent feeds and the shared neural measurements, select factory, row, or station camera views, and pause or resume the floor.',
-      inputSchema: { type: 'object', properties: { action: { type: 'string', enum: ['status', 'pause', 'resume', 'factory_view', 'row_view', 'station_view', 'save'] } }, required: ['action'], additionalProperties: false },
+      description: 'Inspect 64 independent feeds and the shared neural measurements, play the single-fly-to-factory reveal, select camera views, and pause or resume the floor.',
+      inputSchema: { type: 'object', properties: { action: { type: 'string', enum: ['status', 'pause', 'resume', 'reveal', 'factory_view', 'row_view', 'station_view', 'save'] } }, required: ['action'], additionalProperties: false },
       annotations: { readOnlyHint: false, untrustedContentHint: false },
       async execute(input) {
         if (commandPending) throw new Error('A command is already running');
@@ -96,6 +111,7 @@ if (document.modelContext?.registerTool) {
           else if (input.action === 'factory_view') setView(0);
           else if (input.action === 'row_view') setView(1);
           else if (input.action === 'station_view') setView(2);
+          else if (input.action === 'reveal') await startReveal();
           else if (input.action === 'save') await client.action('save');
           else if (!['status', 'pause', 'resume'].includes(input.action)) throw new TypeError('Unknown action');
           return { connection, paused, seconds: state.time, stationCount: STATION_COUNT, sourceVideos: feed.clips.length,
