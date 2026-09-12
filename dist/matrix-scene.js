@@ -4,6 +4,7 @@ import { flyGeometry, FLY_SCALE, FLY_X, FLY_Y, SOCKET } from './matrix-fly.js';
 import { bake, builders, roundedRectangle } from './matrix-geometry.js';
 import { frontRightLegPose } from './swipe.js';
 import { createMotionResponse } from './motion.js';
+import { createRestraints } from './matrix-restraints.js';
 
 export function createMatrix(canvas, feed) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
@@ -108,6 +109,7 @@ export function createMatrix(canvas, feed) {
   const idTexture = new THREE.CanvasTexture(ids); idTexture.colorSpace = THREE.SRGBColorSpace;
   scene.add(new THREE.Mesh(bake(badges), new THREE.MeshBasicMaterial({ map: idTexture })));
   const geometry = flyGeometry(), bodies = instances(geometry.body, solid, STATION_COUNT, true);
+  const restraints = createRestraints(scene, stations);
   const wings = geometry.wings.map(geo => instances(geo, wingsMaterial, STATION_COUNT, true));
   const limbMaterial = new THREE.MeshStandardMaterial({ color: 0x283f45, metalness: .3, roughness: .5 });
   const limbBones = instances(new THREE.CylinderGeometry(1, 1, 1, 5), limbMaterial, STATION_COUNT * 3, true);
@@ -134,6 +136,7 @@ export function createMatrix(canvas, feed) {
       body.position.set(s.x + FLY_X, FLY_Y + Math.sin(phase) * .009, s.z);
       body.rotation.set(0, 0, Math.sin(phase * .7) * .005);
       body.scale.setScalar(FLY_SCALE); body.updateMatrix(); bodies.setMatrixAt(s.id, body.matrix);
+      restraints.pose(s, body.matrix);
       for (let i = 0; i < 2; i++) {
         part.position.set(-.18, .41, .23 * (i ? 1 : -1));
         part.rotation.set((i ? 1 : -1) * Math.sin(time * (10 + s.phase * .2) + s.phase) * (.025 + response.motor * .14), 0, 0);
@@ -153,6 +156,7 @@ export function createMatrix(canvas, feed) {
       part.quaternion.setFromUnitVectors(up, end.clone().normalize()); part.scale.set(1, end.length(), 1); part.updateMatrix(); cables.setMatrixAt(s.id, part.matrix);
     }
     for (const batch of [bodies, ...wings, limbBones, joints, cables]) batch.instanceMatrix.needsUpdate = true;
+    restraints.update();
     if (lastTextureVersion !== feed.version) { feedTexture.needsUpdate = true; lastTextureVersion = feed.version; }
     const smoothing = 1 - Math.exp(-Math.min(dt, .05) * 6);
     for (const key of ['theta', 'phi', 'span']) orbit[key] += (desired[key] - orbit[key]) * smoothing;
@@ -170,7 +174,7 @@ export function createMatrix(canvas, feed) {
     setView(index) { cameraView = clamp(index, 0, views.length - 1); Object.assign(desired, views[cameraView], { target: [...views[cameraView].target] }); zoom = 1; return cameraView; },
     orbit(dx, dy) { desired.theta -= dx * .004; desired.phi = clamp(desired.phi + dy * .003, .35, 1.45); },
     zoom(delta) { zoom = clamp(zoom * Math.exp(-delta * .001), .65, 4); },
-    stats() { return { stations: STATION_COUNT, phones: STATION_COUNT, view: cameraView, drawCalls: renderer.info.render.calls, triangles: renderer.info.render.triangles, span: fittedSpan }; },
+    stats() { return { stations: STATION_COUNT, phones: STATION_COUNT, restraints: restraints.count, view: cameraView, drawCalls: renderer.info.render.calls, triangles: renderer.info.render.triangles, span: fittedSpan }; },
     dispose() { const seen = new Set(); scene.traverse(node => { for (const resource of [node.geometry, node.material]) if (resource && !seen.has(resource)) { seen.add(resource); resource.dispose(); } }); feedTexture.dispose(); idTexture.dispose(); renderer.dispose(); }
   };
 }

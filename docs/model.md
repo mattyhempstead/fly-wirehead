@@ -10,6 +10,8 @@ The `matrix` branch renders 64 flies and 64 phones in an 8 × 8 factory. There i
 
 The Three.js screen geometry maps each phone to its own atlas tile. Phones face along −X toward flies facing +X. Repeated bodies, wings, benches, swiping limbs, and wires use instancing; the entire screen atlas is rendered as one mesh. Observer camera controls do not affect the sensory image.
 
+Each fly's anatomical back right leg (+Z, hind pair) carries a metal cuff aligned with the lower leg. Nineteen alternating metal links drape over the bench edge to an eyelet bolted to the factory floor. The cuff follows the fly's body transform; small movements taper through the upper links while the lower chain and anchor remain fixed. This is visual restraint choreography, not a chain physics solver. The original body proportions, compound eyes, antennae, and wing shape are retained, with finer body facets, bristles, and cross-veins.
+
 For each observation, the browser copies one phone's currently composited tile into a 90 × 160 canvas, flips the RGBA rows into the native WebGL-compatible order, and submits it through the existing local bridge. Selection advances round-robin across all 64 stations. The brain therefore receives successive samples from different phones, not a simultaneous 64-image retinal field. There are no individual neural memories or feedback loops per station. The UI's current input station identifies the sampled display.
 
 The browser submits nothing before the cache is ready, after rendering fails, while hidden, or while the floor is paused. An already accepted observation can finish. The visual floor can continue during brain loading or disconnection; actual measurements are then unavailable and displayed as a dash.

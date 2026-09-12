@@ -8,14 +8,14 @@ export const SOCKET = [.63, .86, 0];
 export function flyGeometry() {
   const root = new THREE.Group(), { mesh, orb, rod } = builders(root);
   const shell = 0x293e46, metal = 0x26373b, dark = 0x0e181d;
-  orb([.91, .39, .43], [-.83, -.02, 0], 0x142429);
+  orb([.91, .39, .43], [-.83, -.02, 0], 0x142429, root, 2);
   for (let i = 0; i < 5; i++) {
     const ring = mesh(new THREE.TorusGeometry(.36 - i * .035, .035, 4, 12), [0x314843, 0x3e493d, 0x304447, 0x39413b, 0x2b3b40][i], [-.65 - i * .17, -.01, 0]);
     ring.rotation.y = Math.PI / 2;
   }
-  orb([.66, .53, .5], [-.05, .08, 0], shell);
+  orb([.66, .53, .5], [-.05, .08, 0], shell, root, 2);
   const head = new THREE.Group(); head.position.set(.63, .19, 0); root.add(head);
-  orb([.41, .4, .4], [0, 0, 0], 0x40515a, head);
+  orb([.41, .4, .4], [0, 0, 0], 0x40515a, head, 2);
   for (const side of [-1, 1]) {
     orb([.28, .37, .255], [.12, .04, side * .29], 0xab1336, head, 2);
     orb([.065, .045, .045], [.21, .25, side * .47], 0xf5c0b7, head, 0);
@@ -25,7 +25,7 @@ export function flyGeometry() {
   }
   rod([.28, -.17, 0], [.51, -.35, 0], .045, metal, head);
   orb([.06, .08, .11], [.51, -.35, 0], dark, head);
-  for (let i = 0; i < 30; i++) {
+  for (let i = 0; i < 48; i++) {
     const a = random(i + 4) * Math.PI * 2, b = random(i + 51) * Math.PI;
     const p = [Math.cos(a) * Math.sin(b) * .60 - .08, Math.abs(Math.cos(b)) * .51 + .1, Math.sin(a) * Math.sin(b) * .49];
     if (p[0] > .3) continue;
@@ -55,6 +55,8 @@ export function flyGeometry() {
     const outline = [...points, points[0]];
     for (let i = 1; i < outline.length; i++) rod(outline[i - 1], outline[i], .009, 0x446e78, group, 3);
     for (let i = 2; i < 6; i++) rod([-.1, 0, .025 * side], points[i], .007, 0x608b95, group, 3);
+    rod([-.83, .01, .31 * side], [-1.23, .025, .7 * side], .007, 0x608b95, group, 3);
+    rod([-1.38, -.02, .31 * side], [-1.68, .01, .87 * side], .007, 0x608b95, group, 3);
     return bake(group);
   });
   return { body, wings };
