@@ -47,8 +47,8 @@ export function createMatrix(canvas, feed) {
   // Matte pads keep their brightness while orbiting, with a steady fill under
   // the real fly shadows. Chamber fog should not darken them with camera depth.
   const pad = new THREE.Group();
-  builders(pad).box([3, .022, 2.65], [-.76, .855, 0], 0x3b5140);
-  const padMaterial = new THREE.MeshLambertMaterial({ vertexColors: true, emissive: 0x344b3a, emissiveIntensity: .55, fog: false });
+  builders(pad).box([3, .022, 2.65], [-.76, .855, 0], 0x718e6c);
+  const padMaterial = new THREE.MeshLambertMaterial({ vertexColors: true, emissive: 0x64865d, emissiveIntensity: .8, fog: false });
   const pads = instances(bake(pad), padMaterial); pads.castShadow = true; positionCopies(pads);
   b.box([5.16, .035, .025], [0, .73, 1.663], 0x2c5237);
   for (const x of [-2.25, 2.25]) {

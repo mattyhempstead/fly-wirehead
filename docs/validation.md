@@ -215,3 +215,9 @@ The scene module passed its syntax check and the diff passed whitespace checks. 
 Moved the original wall faces out of the metallic environment material into the same unlit, fog-free material as the repeated wall shells. Their dimensions and green colors now match, and random shell tinting is removed. The original walls share the neighbouring rooms' reveal opacity; overhead snapshots temporarily capture the walls at full opacity so the fade is applied only once.
 
 Both edited JavaScript modules passed syntax checks and the diff passed whitespace checks. Browser comparison in the Factory floor view confirmed matching green walls and trim with no console errors or warnings.
+
+## Much brighter fly pads — 2026-09-13
+
+Changed the detailed pads to a pale green diffuse color with a brighter emissive fill, increasing its intensity from 0.55 to 0.8. The pads retain their matte material, received fly shadows, and fog-free rendering. Updated the nearby room prototypes to a matching brighter green; distant room captures inherit the new pads automatically.
+
+Both edited JavaScript modules passed syntax checks and the diff passed whitespace checks. Restarted the stopped local server and visually verified the brighter pads across the original room and its neighbours. Shared neural telemetry was connected and the browser reported no errors or warnings.
