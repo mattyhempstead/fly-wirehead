@@ -179,3 +179,7 @@ Removed both falling-symbol wall planes, their canvas texture, and the glyph ani
 ## Stronger wingbeats — 2026-09-12
 
 Increased the detailed flies' wingbeat speed by about 1.8× and raised their angular amplitude from 0.025–0.165 to 0.075–0.355 radians. All 96 detailed flies retain their individual phases and measured motor modulation. The local close-up was inspected across changing poses with connected telemetry and no console errors or warnings. The edited module passed its syntax check and the diff passed whitespace checks. Neural dynamics, video timing, and the distant rendering tiers are unchanged.
+
+## Remove room machinery — 2026-09-12
+
+Removed the rear computer racks, cylindrical power columns, and their attached lights and cable bundles. The refreshed room snapshots also omit these objects in distant copies. Browser inspection confirmed open room edges, retained flies and phones, green wall trim, and connected neural telemetry with no console errors or warnings. Both edited JavaScript modules passed syntax checks and the diff passed whitespace checks. Restarted the stopped local Python server before verifying the preview.

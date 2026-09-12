@@ -74,7 +74,7 @@ export function createMatrix(canvas, feed) {
     const x = (column - (COLUMNS - 1) / 2) * PITCH_X + socketX;
     f.rod([x, wireHeight, supplyBack], [x, wireHeight, supplyFront], .028, 0x536c57);
   }
-  // The collector stays in the same horizontal plane, at the rear racks.
+  // The collector stays in the same horizontal plane, at the rear of the room.
   const supplyHalfWidth = (COLUMNS - 1) / 2 * PITCH_X + .7;
   f.rod([socketX - supplyHalfWidth, wireHeight, supplyBack], [socketX + supplyHalfWidth, wireHeight, supplyBack], .042, 0x536c57);
   // Clear circulation lanes and safety paint make the regular grid read as a factory.

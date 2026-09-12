@@ -4,42 +4,7 @@ import { random } from './matrix-timeline.js';
 
 // Environmental animation only; it never enters the phones or neural input.
 export function createAtmosphere(scene, stations, { socketX, wireHeight }) {
-  const steel = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: .43, metalness: .58 });
   const emission = new THREE.MeshBasicMaterial({ color: 0x8df578, toneMapped: false });
-  const hardware = new THREE.Group(), h = builders(hardware);
-  const lights = new THREE.Group(), l = builders(lights);
-  for (let i = 0; i < 10; i++) {
-    const x = -25.2 + i * 5.6;
-    h.box([3.4, 5.9, 1.5], [x, 2.95, -27.8], 0x14221a);
-    h.box([3.0, 5.5, .10], [x, 2.95, -26.99], 0x080f0b);
-    for (let slot = 0; slot < 10; slot++) {
-      const y = .55 + slot * .48;
-      h.box([2.42, .29, .07], [x, y, -26.91], 0x213629);
-      l.box([.035, .10, .025], [x + .96, y, -26.85], 0xffffff);
-      if (slot % 3 === 0) l.box([.15, .026, .025], [x - .88, y, -26.85], 0xffffff);
-    }
-    // Uneven cable bundles disappear into the chamber above the processing racks.
-    for (let cable = 0; cable < 3; cable++) {
-      const dx = (cable - 1) * .34;
-      const points = [[x + dx, 5.8, -27.8], [x + dx, 7.1, -27.8], [x + dx + .35, 8.1 + random(i + cable) * 1.2, -28.5], [x + dx + .6, 9.4, -29.95]];
-      h.mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points.map(p => new THREE.Vector3(...p))), 18, .052, 5), 0x1f3026);
-    }
-  }
-  for (let i = 0; i < 10; i++) {
-    const z = -24 + i * 5.3, x = 27.2;
-    h.mesh(new THREE.CylinderGeometry(.78, 1.02, .38, 12), 0x25382b, [x, .2, z]);
-    h.mesh(new THREE.CylinderGeometry(.7, .7, 6.4, 12), 0x102019, [x, 3.6, z]);
-    for (const y of [.72, 1.45, 5.85, 6.65]) {
-      h.mesh(new THREE.CylinderGeometry(.79, .79, .14, 12), 0x3e5441, [x, y, z]);
-    }
-    h.mesh(new THREE.CylinderGeometry(.68, .78, .45, 12), 0x263c2b, [x, 6.93, z]);
-    l.box([.035, 4.1, .36], [x - .712, 3.55, z], 0xffffff);
-    h.rod([x, 7.1, z], [29.8, 7.1, z], .09, 0x223c2b);
-  }
-  hardware.scale.y = lights.scale.y = .62;
-  const machinery = new THREE.Mesh(bake(hardware), steel); machinery.receiveShadow = machinery.castShadow = true; scene.add(machinery);
-  scene.add(new THREE.Mesh(bake(lights), emission));
-
   const stationLight = new THREE.Group(), lightBuilder = builders(stationLight);
   lightBuilder.box([4.7, .021, .033], [0, .717, 1.669], 0xffffff);
   lightBuilder.box([.28, .012, .025], [-1.92, .873, 1.15], 0xffffff);
