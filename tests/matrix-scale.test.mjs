@@ -29,7 +29,7 @@ test('100 blocks each contain a unique 10 by 10 room grid, representing 960,000 
   for (const items of [blocks, rooms]) for (let i = 1; i < items.length; i++) assert.ok(items[i].ring >= items[i - 1].ring);
   assert.ok(ROOM_PITCH > ROOM_SIZE);
   assert.ok(BLOCK_PITCH > BLOCK_SIZE);
-  assert.ok(BLOCK_PITCH - BLOCK_SIZE > ROOM_PITCH - ROOM_SIZE, 'narrow service roads still distinguish the second grid');
+  assert.ok(BLOCK_PITCH - BLOCK_SIZE > ROOM_PITCH - ROOM_SIZE, 'wide service roads distinguish the second grid');
 });
 
 test('the room neighbourhood grows with the camera and is bounded at 10,000 instances', () => {
@@ -83,9 +83,9 @@ test('rooms and block plinths are submitted before entering a padded camera fram
     { span: 120, theta: -.55, phi: 1.1, aspect: 16 / 9, target: [0, 0, 0] },
     { span: 320, theta: -.55, phi: 1.1, aspect: 16 / 9, target: [0, 0, 0] },
     { span: 800, theta: -.55, phi: 1.1, aspect: 16 / 9, target: [-35, 0, -35] },
-    { span: 5, theta: 1.2, phi: 1.45, aspect: 2.4, target: [750, 0, 750] },
+    { span: 5, theta: 1.2, phi: 1.45, aspect: 2.4, target: [BLOCK_PITCH, 0, BLOCK_PITCH] },
     { span: 800, theta: -2.4, phi: 1.45, aspect: 2.4, target: [-500, 200, 1000] },
-    { span: 100, theta: 1.2, phi: .5, aspect: .5, target: [1500, -200, -750] },
+    { span: 100, theta: 1.2, phi: .5, aspect: .5, target: [BLOCK_PITCH * 2, -200, -BLOCK_PITCH] },
   ];
   let outerRoomsChecked = 0;
   for (const { span, theta, phi, aspect, target } of cases) {

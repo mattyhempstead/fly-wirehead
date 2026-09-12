@@ -197,3 +197,9 @@ Replaced the simplified static blobs and rectangular wings with a 670-triangle f
 Also fixed neighbouring rooms disappearing when zooming in after a pan. Their fade now accounts for the camera target projected onto the floor, preserving the original reveal while allowing close inspection of adjacent rooms.
 
 All **59 JavaScript checks** passed. New coverage verifies the polygon budget, original body bounds, wing-pivot attributes, varied wing cycles across 81 rooms, bounded instance counts without per-frame transform uploads, and visibility after horizontal or vertical panning. Browser inspection confirmed the neighbouring models, varied wing positions, and connected shared neural telemetry. A close panned view submitted 4,608 animated replicas and 4.32 million triangles at 60 fps. The completed reveal retained all 10,000 rooms, seven draw calls, 746,002 triangles, and 60 fps. There were no browser errors or warnings.
+
+## Wider gaps between the largest blocks — 2026-09-13
+
+Increased the spacing of the 100-room blocks from 750 to 830 units, widening the roads between their 734-unit plinths from 16 to 96 units. The final camera span increases to 8,800 to frame the expanded grid; room spacing within each block remains 70 units.
+
+All eight layout and reveal checks passed, including continuous camera motion, early geometry submission, and complete campus framing across viewport shapes. Browser inspection confirmed the wider block gaps, 10,000 rendered rooms, seven draw calls, and no console errors or warnings. The preview was left paused in the All blocks view.
