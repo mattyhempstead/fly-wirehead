@@ -29,7 +29,7 @@ test('100 blocks each contain a unique 10 by 10 room grid, representing 960,000 
   for (const items of [blocks, rooms]) for (let i = 1; i < items.length; i++) assert.ok(items[i].ring >= items[i - 1].ring);
   assert.ok(ROOM_PITCH > ROOM_SIZE);
   assert.ok(BLOCK_PITCH > BLOCK_SIZE);
-  assert.ok(BLOCK_PITCH - BLOCK_SIZE > (ROOM_PITCH - ROOM_SIZE) * 10, 'wide roads distinguish the second grid');
+  assert.ok(BLOCK_PITCH - BLOCK_SIZE > ROOM_PITCH - ROOM_SIZE, 'narrow service roads still distinguish the second grid');
 });
 
 test('the room neighbourhood grows with the camera and is bounded at 10,000 instances', () => {
@@ -53,22 +53,23 @@ test('vertical camera panning keeps the rooms under the viewing ray rendered', (
   }
 });
 
-test('rooms fade in early and gradually before the second grid begins appearing', () => {
+test('rooms fade in gradually, then the outer grid appears immediately at full opacity', () => {
   assert.equal(revealOpacity(28).rooms, 0);
   assert.ok(revealOpacity(40).rooms > 0);
   assert.ok(revealOpacity(65).rooms < .5, 'fade spans a wider range than the previous 65–95 interval');
   assert.equal(revealOpacity(110).rooms, 1);
   assert.deepEqual(revealOpacity(BLOCK_SPAN), { rooms: 1, blocks: 0 }, 'the complete first 10 by 10 grid is revealed on its own');
-  assert.equal(revealOpacity(900).blocks, 0);
-  assert.equal(revealOpacity(1350).blocks, .5);
+  assert.equal(revealOpacity(899.99).blocks, 0);
+  assert.equal(revealOpacity(900).blocks, 1);
+  assert.equal(revealOpacity(900.01).blocks, 1);
+  assert.equal(revealOpacity(1350).blocks, 1);
   assert.equal(revealOpacity(1800).blocks, 1);
   let previous = revealOpacity(0);
   for (let span = 1; span <= CAMPUS_SPAN; span++) {
     const current = revealOpacity(span);
-    for (const key of ['rooms', 'blocks']) {
-      assert.ok(current[key] >= previous[key] && current[key] <= 1);
-      assert.ok(current[key] - previous[key] < .02, 'no opacity pop');
-    }
+    assert.ok(current.rooms >= previous.rooms && current.rooms <= 1);
+    assert.ok(current.rooms - previous.rooms < .02, 'neighbouring rooms retain their gradual fade');
+    assert.ok(current.blocks === 0 || current.blocks === 1, 'the outer grid is never partially faded');
     previous = current;
   }
 });

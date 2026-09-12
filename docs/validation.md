@@ -157,3 +157,7 @@ Browser inspection covered the saved single-fly opening, shorter walls and parti
 ## Keep the original room detailed during the pullback — 2026-09-12
 
 Moved the original room's geometry replacement from span 180 to span 4,000. Its animated flies, phones, walls, and wiring now remain intact through the 100-room view and most of the outer-block reveal; the distant copy takes over only near the end. Browser status confirmed one detailed room at span 800, with 41 draw calls and 60 fps, and zero detailed rooms at the completed span 8,500, with seven draw calls and 60 fps. Shared telemetry stayed connected and there were no console errors or warnings. All six layout/reveal checks passed; the diff passed whitespace checks.
+
+## Tighter outer grid without a fade — 2026-09-12
+
+Reduced block spacing from 800 to 750 units, leaving 16-unit gaps instead of 66. The final camera span is 8,000 to fit the smaller footprint. The outer grid switches directly from hidden to fully opaque at span 900; the inner room fade and delayed original-room detail replacement are retained. All six layout/reveal checks passed, including the exact opacity boundary, absence of partially faded outer blocks, unique non-overlapping placement, continuous camera motion, and final framing. Browser inspection confirmed the denser full grid and no console errors or warnings.
