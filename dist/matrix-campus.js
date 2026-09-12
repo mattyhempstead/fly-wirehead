@@ -51,8 +51,9 @@ export function createCampus(scene, room, screens, originalWalls) {
   // bounded so the full campus still uses the inexpensive room snapshots.
   const nearRoot = new THREE.Group(), n = builders(nearRoot);
   for (const station of stations) {
-    n.box([5.18, .15, 3.30], [station.x, .74, station.z], 0x263c2a);
-    n.box([3, .022, 2.65], [station.x - .76, .855, station.z], 0x90b585);
+    n.box([5.18, .14, 3.30], [station.x, .74, station.z], 0x657e69);
+    n.box([5.2, .035, 3.32], [station.x, .827, station.z], 0x799a80);
+    n.box([3, .022, 2.65], [station.x - .76, .855, station.z], 0xa4c399);
     n.box([.11, 2.5, 1.47], [station.x + 1.12, 2.1, station.z], 0x0b1411);
   }
   const nearGeometry = new THREE.InstancedMesh(bake(nearRoot), new THREE.MeshBasicMaterial({ vertexColors: true, fog: false, transparent: true }), 81);

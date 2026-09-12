@@ -41,14 +41,19 @@ export function createMatrix(canvas, feed) {
     for (const s of stations) { unit.position.set(s.x, 0, s.z); unit.rotation.set(0, 0, 0); unit.scale.setScalar(1); unit.updateMatrix(); mesh.setMatrixAt(s.id, unit.matrix); }
     mesh.instanceMatrix.needsUpdate = true;
   }
+  // Lighten the whole tabletop as well as the smaller fly mat, with diffuse
+  // surfaces and steady fill so both stay readable from every camera angle.
+  const platform = new THREE.Group(), platformBuilder = builders(platform);
+  platformBuilder.box([5.18, .14, 3.30], [0, .74, 0], 0x4b6452);
+  platformBuilder.box([5.2, .035, 3.32], [0, .827, 0], 0x698570);
+  const platformMaterial = new THREE.MeshLambertMaterial({ vertexColors: true, emissive: 0x4c6750, emissiveIntensity: .65, fog: false });
+  const platforms = instances(bake(platform), platformMaterial); platforms.castShadow = true; positionCopies(platforms);
   const base = new THREE.Group(), b = builders(base);
-  b.box([5.18, .14, 3.30], [0, .74, 0], 0x1c2a23);
-  b.box([5.2, .035, 3.32], [0, .827, 0], 0x243029);
   // Matte pads keep their brightness while orbiting, with a steady fill under
   // the real fly shadows. Chamber fog should not darken them with camera depth.
   const pad = new THREE.Group();
-  builders(pad).box([3, .022, 2.65], [-.76, .855, 0], 0x718e6c);
-  const padMaterial = new THREE.MeshLambertMaterial({ vertexColors: true, emissive: 0x64865d, emissiveIntensity: .8, fog: false });
+  builders(pad).box([3, .022, 2.65], [-.76, .855, 0], 0x869f80);
+  const padMaterial = new THREE.MeshLambertMaterial({ vertexColors: true, emissive: 0x79966f, emissiveIntensity: .85, fog: false });
   const pads = instances(bake(pad), padMaterial); pads.castShadow = true; positionCopies(pads);
   b.box([5.16, .035, .025], [0, .73, 1.663], 0x2c5237);
   for (const x of [-2.25, 2.25]) {

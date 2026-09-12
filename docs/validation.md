@@ -221,3 +221,9 @@ Both edited JavaScript modules passed syntax checks and the diff passed whitespa
 Changed the detailed pads to a pale green diffuse color with a brighter emissive fill, increasing its intensity from 0.55 to 0.8. The pads retain their matte material, received fly shadows, and fog-free rendering. Updated the nearby room prototypes to a matching brighter green; distant room captures inherit the new pads automatically.
 
 Both edited JavaScript modules passed syntax checks and the diff passed whitespace checks. Restarted the stopped local server and visually verified the brighter pads across the original room and its neighbours. Shared neural telemetry was connected and the browser reported no errors or warnings.
+
+## Lighten both pad layers — 2026-09-13
+
+Brightened the small fly mats again and moved the larger two-layer tabletops out of the metallic bench material into a lighter, fog-free Lambert material with steady emissive fill. Both layers retain received shadows, while the phones, flies, and table supports keep their existing materials. Updated the nearby prototypes' large platforms and small mats; distant captures inherit the new surfaces.
+
+Both edited JavaScript modules passed syntax checks and the diff passed whitespace checks. The local preview returned HTTP 200. No new browser visual comparison was performed for this change.
