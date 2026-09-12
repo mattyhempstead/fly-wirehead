@@ -167,3 +167,7 @@ Reduced block spacing from 800 to 750 units, leaving 16-unit gaps instead of 66.
 Removed the span-900 visibility switch. Outer blocks are now fully opaque from the start and available independently of the original block's room fade. Expanded the drawing neighbourhood beyond the frame, accounting for low camera angles, wall height, and larger block plinths, so additional instances enter the draw before they enter view.
 
 All **55 JavaScript checks** passed. A new Three.js frustum regression checks room and block bounds against a frame padded by 10%, including outer rooms below the old cutoff, close panned views, low viewing angles, and portrait/landscape frames. Browser inspection at span 800 confirmed surrounding blocks already present around the central block, with 1,521 submitted rooms, one detailed room, and 60 fps. The completed reveal retained 10,000 rooms, seven draw calls, and 60 fps. Shared telemetry stayed connected and there were no console errors or warnings.
+
+## Original room wall trim — 2026-09-12
+
+Added the missing continuous green strips along both original room wall tops, matching the distant shells' dimensions, height, color, and unlit, fog-free material. Browser inspection confirmed the complete outline above the original room's machinery, with no console errors or warnings. The edited module passed its syntax check and the diff passed whitespace checks. The preview was left paused, matching its state before the update.

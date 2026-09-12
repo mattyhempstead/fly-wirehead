@@ -98,6 +98,12 @@ export function createMatrix(canvas, feed) {
     f.box([4.5, .13, .035], [x, ROOM_WALL_HEIGHT - 1.3, -29.92], 0x627c59);
   }
   const environment = new THREE.Mesh(bake(factory), solid); environment.receiveShadow = true; room.add(environment);
+  // Match the continuous wall-top trim on the distant room shells, including
+  // their unlit material so the original room keeps the same green outline.
+  const wallTrim = new THREE.Group(), trim = builders(wallTrim), capY = ROOM_WALL_HEIGHT - .14;
+  trim.box([61, .24, .46], [0, capY, -30.4], 0x52794b);
+  trim.box([.46, .24, 62], [30.6, capY, 0], 0x52794b);
+  room.add(new THREE.Mesh(bake(wallTrim), new THREE.MeshBasicMaterial({ vertexColors: true, fog: false })));
   const atmosphere = createAtmosphere(room, stations, { socketX, wireHeight });
 
   // One texture atlas and one mesh for all independently composited screens.
