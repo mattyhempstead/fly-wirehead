@@ -18,7 +18,9 @@ export const blocks = Array.from({ length: BLOCK_COUNT }, (_, id) => {
 const ringCounts = Array.from({ length: 51 }, (_, ring) => blocks.filter(block => block.ring <= ring).length);
 export function visibleBlockCount(span, aspect, phi, target = [0, 0, 0]) {
   const reach = span * .5 * Math.hypot(aspect, 1 / Math.max(.2, Math.cos(phi)));
-  const offset = Math.max(Math.abs(target[0]), Math.abs(target[2]));
+  // Screen-space panning also lifts the target. Account for where that raised
+  // or lowered viewing ray meets the floor so visible rooms are not culled.
+  const offset = Math.max(Math.abs(target[0]), Math.abs(target[2])) + Math.abs(target[1]) * Math.tan(phi);
   const ring = clamp(Math.ceil((reach + offset) / BLOCK_PITCH) + 1, 1, 50);
   return ringCounts[ring];
 }

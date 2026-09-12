@@ -13,7 +13,7 @@ This is the `matrix` branch of [Fly / Wirehead](https://github.com/mattyhempstea
 - **96 independent feeds:** each fly has its own unique shuffled loop through all twelve insect Shorts, playing every clip once before repeating. Playback offsets and swipe timers are independent. Swipes occur roughly every 2.6–3.5 seconds, staggered across stations.
 - **Head-on phones:** each portrait screen points directly toward its fly; the phone has no attached machinery.
 - **One shared connectome:** the browser samples the phones in rotation, submitting one display per neural observation. Measured motor activity modulates wing movement across the floor.
-- **Four camera views:** factory floor, along the line, a single station, and all blocks. Drag to orbit, scroll to zoom, and use the buttons below the view to pause or enter fullscreen.
+- **Camera controls:** factory floor, along the line, a single station, and all blocks. Choose Orbit or Pan for dragging, use Shift-drag to pan at any time, or use the four pan arrows below the scene. Recenter undoes panning while keeping your angle and zoom. Scroll to zoom; the toolbar also provides pause and fullscreen.
 - **The big reveal:** press **Play reveal** for a 30-second shot: one fly near the centre of the central room → the complete room → a huge 100 × 100 grid of rooms. The camera stays at a low, oblique angle, with the opening fly clear of its neighbours. After the opening hold, the pullback maintains a steady proportional speed through the room reveal, easing only at the start and finish. Replay it whenever you like; dragging, scrolling, or choosing a view takes over the camera.
 - **Efficient distance rendering:** one detailed room has the live fly models, restraints, and 96 independent feeds. Nearby copies use simple raised benches, flies, and video screens. Distant blocks use a rendered image of the actual room on simple 3D shells. The 960,000 figure describes the visual scene; there is still only one shared brain.
 
@@ -55,7 +55,10 @@ Swiping, breathing, and clip selection are choreographed. The model uses reconst
 | --- | --- |
 | View buttons / C | Factory, row, single station, or all blocks |
 | Play / Replay reveal | Start the single-fly-to-10,000-block animation; resumes a paused floor |
-| Drag | Orbit |
+| Drag | Orbit, or pan when Pan mode is selected |
+| Shift + drag | Pan in either drag mode |
+| Pan arrows / arrow keys with the scene focused | Move the scene left, right, up, or down |
+| Recenter | Restore framing before panning, keeping angle and zoom |
 | Scroll | Zoom |
 | Pause button / Space | Pause or resume the floor, camera reveal, and neural input |
 | Fullscreen button / F | Toggle fullscreen |

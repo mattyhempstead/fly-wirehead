@@ -27,6 +27,15 @@ test('the room neighbourhood grows with the camera and is bounded at 10,000 inst
   assert.equal(previous, BLOCK_COUNT);
 });
 
+test('vertical camera panning keeps the rooms under the viewing ray rendered', () => {
+  const phi = 1.1;
+  for (const height of [-400, 400]) {
+    const target = [0, height, 0], groundZ = -height * Math.tan(phi);
+    const room = blocks.findIndex(block => block.column === 0 && block.row === Math.round(groundZ / BLOCK_PITCH));
+    assert.ok(room >= 0 && room < visibleBlockCount(200, 1.2, phi, target));
+  }
+});
+
 test('the extended reveal reaches the room first, continues to the campus, and stops exactly', () => {
   const views = [
     { theta: -.66, phi: 1.10, span: 68, target: [0, 1, 0] },

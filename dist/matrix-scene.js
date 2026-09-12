@@ -203,6 +203,8 @@ export function createMatrix(canvas, feed) {
     setView: controls.setView,
     beginOrbit: controls.beginOrbit,
     orbit: controls.orbit,
+    pan: controls.pan,
+    resetPan: controls.resetPan,
     zoom: controls.zoom,
     stats() { return { stations: STATION_COUNT, phones: STATION_COUNT, restraints: restraints.count, representedFlies: REPRESENTED_FLIES, ...campus.stats(), view: controls.snapshot().view, camera: controls.snapshot(), drawCalls: renderer.info.render.calls, triangles: renderer.info.render.triangles, span: fittedSpan }; },
     dispose() { const seen = new Set(); scene.traverse(node => { for (const resource of [node.geometry, node.material]) if (resource && !seen.has(resource)) { seen.add(resource); resource.dispose(); } }); campus.dispose(); atmosphere.dispose(); feedTexture.dispose(); idTexture.dispose(); renderer.dispose(); }

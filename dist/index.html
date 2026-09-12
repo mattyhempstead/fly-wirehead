@@ -22,7 +22,7 @@
     </div>
     <section class="observation" aria-label="Fly factory and 100 by 100 grid of blocks">
       <div class="scene-wrap" id="scene-wrap">
-        <canvas id="scene" tabindex="0" aria-label="96 flies in an 8 by 12 room, with a reveal of 10,000 repeated room blocks. Drag to orbit; scroll to zoom; Space pauses."></canvas>
+        <canvas id="scene" tabindex="0" aria-label="96 flies in an 8 by 12 room, with a reveal of 10,000 repeated room blocks. Drag to orbit; Shift-drag or select Pan to move the view; arrow keys pan when focused; scroll to zoom; Space pauses."></canvas>
         <div class="floor-label" aria-hidden="true"><span class="live-dot"></span><span id="floor-state">LOADING FOOTAGE</span></div>
         <div class="floor-index" id="floor-index" aria-hidden="true">ROOM 01 / 08 × 12</div>
         <div class="scene-error" id="scene-error" role="alert" hidden>Your browser couldn’t start the 3D scene. A browser with WebGL 2 is required.</div>
@@ -34,8 +34,22 @@
           <button type="button" data-view="2" aria-pressed="false">Single station</button>
           <button type="button" data-view="3" aria-pressed="false">All blocks</button>
         </div>
-        <span class="camera-hint">DRAG TO ORBIT · SCROLL TO ZOOM</span>
         <div class="play-buttons"><button type="button" id="reveal" disabled>Play reveal</button><button type="button" id="pause" aria-pressed="false">Pause floor</button><button type="button" id="fullscreen" aria-label="Enter fullscreen">⛶</button></div>
+      </div>
+      <div class="toolbar camera-toolbar">
+        <div class="drag-buttons" role="group" aria-label="Drag mode">
+          <span class="control-label">DRAG</span>
+          <button type="button" data-drag-mode="orbit" aria-pressed="true">Orbit</button>
+          <button type="button" data-drag-mode="pan" aria-pressed="false">Pan</button>
+        </div>
+        <div class="pan-buttons" role="group" aria-label="Pan controls">
+          <button type="button" data-pan="left" aria-label="Pan left" title="Move the scene left">←</button>
+          <button type="button" data-pan="up" aria-label="Pan up" title="Move the scene up">↑</button>
+          <button type="button" data-pan="down" aria-label="Pan down" title="Move the scene down">↓</button>
+          <button type="button" data-pan="right" aria-label="Pan right" title="Move the scene right">→</button>
+          <button type="button" id="recenter">Recenter</button>
+        </div>
+        <span class="camera-hint">SHIFT + DRAG TO PAN · SCROLL TO ZOOM</span>
       </div>
     </section>
     <div class="under-floor">

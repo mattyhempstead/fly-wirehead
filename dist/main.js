@@ -12,7 +12,7 @@ const playback = createPlayback(), state = playback.state;
 const feed = new MatrixFeed({ reducedMotion });
 let lab, status = null, connection = 'CONNECTING', paused = reducedMotion, failed = false, sceneRendered = false, view = 0;
 let commandPending = false, frames = 0, fpsElapsed = 0, fps = 0;
-let revealPlayed = false;
+let revealPlayed = false, dragMode = 'orbit';
 try { lab = createMatrix(canvas, feed); }
 catch (error) { failed = true; console.error(error); $('#scene-error').hidden = false; }
 const client = new BrainClient({
@@ -68,9 +68,26 @@ $('#pause').addEventListener('click', () => void togglePause());
 $('#fullscreen').addEventListener('click', () => void fullscreen());
 $('#reveal').addEventListener('click', () => void startReveal());
 document.querySelectorAll('[data-view]').forEach(button => button.addEventListener('click', () => setView(Number(button.dataset.view))));
-const unbindOrbit = lab ? bindOrbitInput(canvas, lab) : () => {};
+const panDirections = { left: [-1, 0], up: [0, -1], down: [0, 1], right: [1, 0] };
+function panView(direction, distance = .12) {
+  const [dx, dy] = panDirections[direction], rect = canvas.getBoundingClientRect();
+  lab?.pan(dx * rect.height * distance, dy * rect.height * distance, rect.height, rect.width);
+  updateCameraControls();
+}
+document.querySelectorAll('[data-drag-mode]').forEach(button => button.addEventListener('click', () => {
+  dragMode = button.dataset.dragMode;
+  document.querySelectorAll('[data-drag-mode]').forEach(option => option.setAttribute('aria-pressed', String(option.dataset.dragMode === dragMode)));
+  canvas.classList.toggle('pan-mode', dragMode === 'pan');
+}));
+document.querySelectorAll('[data-pan]').forEach(button => button.addEventListener('click', () => panView(button.dataset.pan)));
+$('#recenter').addEventListener('click', () => { lab?.resetPan(); updateCameraControls(); });
+const unbindOrbit = lab ? bindOrbitInput(canvas, lab, { getDragMode: () => dragMode }) : () => {};
 document.addEventListener('keydown', event => {
   if (event.metaKey || event.ctrlKey || event.altKey || /INPUT|TEXTAREA|SELECT|BUTTON|A/.test(document.activeElement?.tagName)) return;
+  const direction = event.code.startsWith('Arrow') ? event.code.slice(5).toLowerCase() : null;
+  if (direction in panDirections && document.activeElement === canvas) {
+    event.preventDefault(); panView(direction, .04); return;
+  }
   if (['Space', 'KeyC', 'KeyF'].includes(event.code)) event.preventDefault();
   if (event.repeat) return;
   if (event.code === 'Space') void togglePause();

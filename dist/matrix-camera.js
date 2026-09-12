@@ -18,7 +18,7 @@ function revealProgress(t) {
 
 export function createOrbitCamera(views) {
   const pose = { ...copy(views[0]), zoom: 1 };
-  let destination = copy(pose), view = 0, reveal = null;
+  let destination = copy(pose), view = 0, reveal = null, panAnchor = null;
   function beginOrbit() {
     // Take over exactly where the camera is, even halfway through a preset move.
     reveal = null;
@@ -27,6 +27,7 @@ export function createOrbitCamera(views) {
   return {
     snapshot: () => ({ ...copy(pose), view, reveal: reveal ? { elapsed: reveal.elapsed, duration: REVEAL_DURATION } : null }),
     startReveal(start = views[Math.min(2, views.length - 1)]) {
+      panAnchor = null;
       const endView = views.length > 3 ? 3 : 0;
       reveal = { elapsed: 0, endView, from: { ...copy(start), zoom: 1 }, to: { ...copy(views[endView]), zoom: 1 } };
       Object.assign(pose, copy(reveal.from));
@@ -59,6 +60,7 @@ export function createOrbitCamera(views) {
     },
     setView(index) {
       reveal = null;
+      panAnchor = null;
       view = clamp(index, 0, views.length - 1);
       destination = { ...copy(views[view]), zoom: 1 };
       return view;
@@ -72,6 +74,25 @@ export function createOrbitCamera(views) {
       pose.phi = clamp(pose.phi - dy * sensitivity, .35, 1.45);
       destination = copy(pose);
     },
+    pan(dx, dy, viewportHeight, viewportWidth = viewportHeight * 1.48) {
+      beginOrbit();
+      panAnchor ??= [...pose.target];
+      const height = Math.max(1, viewportHeight), aspect = Math.max(1, viewportWidth) / height;
+      const scale = pose.span * Math.max(1, 1.48 / aspect) / pose.zoom / height;
+      const sin = Math.sin(pose.theta), cos = Math.cos(pose.theta), tilt = Math.cos(pose.phi);
+      // Translate in the camera's screen plane: the scene follows the pointer
+      // pixel-for-pixel at every orbit angle, viewport size, and zoom level.
+      pose.target[0] += (-dx * cos - dy * tilt * sin) * scale;
+      pose.target[1] += dy * Math.sin(pose.phi) * scale;
+      pose.target[2] += (dx * sin - dy * tilt * cos) * scale;
+      destination = copy(pose);
+    },
+    resetPan() {
+      if (!panAnchor) return;
+      beginOrbit();
+      pose.target = [...panAnchor]; panAnchor = null;
+      destination = copy(pose);
+    },
     zoom(delta) {
       beginOrbit();
       pose.zoom = clamp(pose.zoom * Math.exp(-delta * .001), .65, 4);
@@ -80,7 +101,7 @@ export function createOrbitCamera(views) {
   };
 }
 
-export function bindOrbitInput(canvas, controls) {
+export function bindOrbitInput(canvas, controls, { getDragMode = () => 'orbit' } = {}) {
   let pointer = null;
   function release(event) {
     if (!pointer || (event && event.pointerId !== pointer.id)) return;
@@ -94,14 +115,16 @@ export function bindOrbitInput(canvas, controls) {
     event.preventDefault();
     canvas.focus({ preventScroll: true });
     controls.beginOrbit();
-    pointer = { id: event.pointerId, x: event.clientX, y: event.clientY };
+    pointer = { id: event.pointerId, x: event.clientX, y: event.clientY, mode: event.shiftKey || getDragMode() === 'pan' ? 'pan' : 'orbit' };
     canvas.setPointerCapture(pointer.id);
     canvas.classList.add('dragging');
   }
   function move(event) {
     if (pointer?.id !== event.pointerId) return;
     if (!(event.buttons & 1)) { release(event); return; }
-    controls.orbit(event.clientX - pointer.x, event.clientY - pointer.y, canvas.getBoundingClientRect().height);
+    const rect = canvas.getBoundingClientRect(), dx = event.clientX - pointer.x, dy = event.clientY - pointer.y;
+    if (pointer.mode === 'pan') controls.pan(dx, dy, rect.height, rect.width);
+    else controls.orbit(dx, dy, rect.height);
     pointer.x = event.clientX; pointer.y = event.clientY;
   }
   function wheel(event) {

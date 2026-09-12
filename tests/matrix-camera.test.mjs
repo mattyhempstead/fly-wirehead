@@ -53,6 +53,51 @@ test('drag sensitivity follows viewport size and becomes gentler in close views 
   assert.ok(angle(600, 60, 0, views[2]) < angle(600, 60));
 });
 
+test('panning moves the scene by the dragged pixels at every heading, scale, zoom, and aspect', () => {
+  for (const theta of [-3, -1.4, 0, 1.4, 3]) for (const phi of [.5, 1.25]) {
+    for (const span of [5.4, 68, 7400]) for (const width of [400, 1440]) for (const zoom of [1, 3]) {
+      const height = 800, controls = createOrbitCamera([{ ...views[0], theta, phi, span }]);
+      controls.zoom(-Math.log(zoom) / .001);
+      const before = controls.snapshot(), point = [...before.target];
+      function pixels(pose) {
+        const aspect = width / height, fitted = pose.span * Math.max(1, 1.48 / aspect) / pose.zoom;
+        const camera = new OrthographicCamera(-fitted * aspect / 2, fitted * aspect / 2, fitted / 2, -fitted / 2, .1, 30000);
+        const radius = Math.max(72, fitted * 1.4);
+        camera.position.set(pose.target[0] + radius * Math.sin(phi) * Math.sin(theta), pose.target[1] + radius * Math.cos(phi), pose.target[2] + radius * Math.sin(phi) * Math.cos(theta));
+        camera.lookAt(...pose.target); camera.updateMatrixWorld();
+        const p = new Vector3(...point).project(camera);
+        return [p.x * width / 2, -p.y * height / 2];
+      }
+      const first = pixels(before);
+      controls.pan(120, 65, height, width);
+      const after = controls.snapshot(), second = pixels(after);
+      assert.ok(Math.abs(second[0] - first[0] - 120) < 1e-8);
+      assert.ok(Math.abs(second[1] - first[1] - 65) < 1e-8);
+      for (const key of ['theta', 'phi', 'span', 'zoom']) assert.equal(after[key], before[key]);
+    }
+  }
+});
+
+test('pan cancels a reveal at the displayed pose, has no drift, and recenters without changing zoom or angle', () => {
+  const controls = createOrbitCamera(views); controls.startReveal();
+  for (let i = 0; i < 300; i++) controls.step(1 / 60);
+  const anchor = controls.snapshot();
+  controls.pan(70, -30, 800, 1200);
+  const panned = controls.snapshot();
+  assert.equal(panned.reveal, null);
+  assert.notDeepEqual(panned.target, anchor.target);
+  for (let i = 0; i < 120; i++) assert.deepEqual(controls.step(1 / 60, true), panned);
+  controls.pan(-15, 40, 800, 1200);
+  controls.zoom(-200); controls.orbit(20, 10, 800);
+  const angled = controls.snapshot(); controls.resetPan();
+  assert.deepEqual(controls.snapshot().target, anchor.target);
+  for (const key of ['theta', 'phi', 'span', 'zoom']) assert.equal(controls.snapshot()[key], angled[key]);
+  controls.pan(10, 10, 800, 1200); controls.setView(0);
+  for (let i = 0; i < 300; i++) controls.step(1 / 60);
+  const preset = controls.snapshot(); controls.resetPan();
+  assert.deepEqual(controls.snapshot(), preset, 'a preset clears the previous pan anchor');
+});
+
 test('preset resets take the shortest turn and smoothly restore zoom without an initial jump', () => {
   const controls = createOrbitCamera([{ ...views[0], theta: -Math.PI + .04 }]);
   controls.orbit(30, 0, 600); controls.zoom(-800);
@@ -133,7 +178,7 @@ class Canvas extends EventTarget {
   captured = new Set();
   classList = { add() {}, remove() {} };
   focus() {}
-  getBoundingClientRect() { return { height: 800 }; }
+  getBoundingClientRect() { return { height: 800, width: 1200 }; }
   setPointerCapture(id) { this.captured.add(id); }
   hasPointerCapture(id) { return this.captured.has(id); }
   releasePointerCapture(id) { this.captured.delete(id); }
@@ -170,4 +215,21 @@ test('wheel input normalizes pixel, line, and page units', () => {
   canvas.send('wheel', { deltaMode: 2, deltaY: .1 });
   assert.deepEqual(deltas, [80, 80, 80]);
   dispose();
+});
+
+test('Shift-drag and Pan mode use translation, keep the gesture mode, and release cleanly', () => {
+  for (const shiftKey of [true, false]) {
+    const canvas = new Canvas(), pans = [], orbits = [];
+    let mode = shiftKey ? 'orbit' : 'pan';
+    const dispose = bindOrbitInput(canvas, { beginOrbit() {}, pan: (...args) => pans.push(args), orbit: (...args) => orbits.push(args) }, { getDragMode: () => mode });
+    canvas.send('pointerdown', { shiftKey }); mode = 'orbit';
+    canvas.send('pointermove', { clientX: 150, clientY: 130, shiftKey: false });
+    assert.deepEqual(pans, [[50, 30, 800, 1200]]);
+    assert.deepEqual(orbits, []);
+    canvas.send('pointerup'); canvas.send('pointermove', { clientX: 200 });
+    assert.equal(pans.length, 1);
+    canvas.send('pointerdown'); canvas.send('pointermove', { clientX: 140, clientY: 120 });
+    assert.deepEqual(orbits, [[40, 20, 800]]);
+    dispose(); assert.equal(canvas.captured.size, 0);
+  }
 });
