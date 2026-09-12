@@ -227,3 +227,9 @@ Both edited JavaScript modules passed syntax checks and the diff passed whitespa
 Brightened the small fly mats again and moved the larger two-layer tabletops out of the metallic bench material into a lighter, fog-free Lambert material with steady emissive fill. Both layers retain received shadows, while the phones, flies, and table supports keep their existing materials. Updated the nearby prototypes' large platforms and small mats; distant captures inherit the new surfaces.
 
 Both edited JavaScript modules passed syntax checks and the diff passed whitespace checks. The local preview returned HTTP 200. No new browser visual comparison was performed for this change.
+
+## Brighter floors throughout the rooms — 2026-09-13
+
+Changed both full-room floor slabs from near-black to lighter greens and added steady emissive fill to their matte Lambert material. Received shadows and fog-free shading are retained. The room snapshots carry the brighter floor into every repeated room, and the repeated slab edges now use a matching lighter green.
+
+Both edited JavaScript modules passed syntax checks and the diff passed whitespace checks. The local preview returned HTTP 200. No new browser visual comparison was performed for this change.

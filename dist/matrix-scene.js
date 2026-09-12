@@ -76,9 +76,9 @@ export function createMatrix(canvas, feed) {
   // Specular highlights and camera-depth fog make the original room stand out
   // from its copies when the camera pulls back or changes angle.
   const floor = new THREE.Group(), floorBuilder = builders(floor);
-  floorBuilder.box([62, .18, 62], [0, -.13, 0], 0x060d09);
-  floorBuilder.box([64, .26, 64], [0, -.33, 0], 0x050d08);
-  const floorMesh = new THREE.Mesh(bake(floor), new THREE.MeshLambertMaterial({ vertexColors: true, fog: false }));
+  floorBuilder.box([62, .18, 62], [0, -.13, 0], 0x60795d);
+  floorBuilder.box([64, .26, 64], [0, -.33, 0], 0x53694f);
+  const floorMesh = new THREE.Mesh(bake(floor), new THREE.MeshLambertMaterial({ vertexColors: true, emissive: 0x445f40, emissiveIntensity: .65, fog: false }));
   floorMesh.receiveShadow = true; room.add(floorMesh);
   const factory = new THREE.Group(), f = builders(factory);
   const supplyBack = -(ROWS - 1) / 2 * PITCH_Z, supplyFront = (ROWS - 1) / 2 * PITCH_Z + .7;

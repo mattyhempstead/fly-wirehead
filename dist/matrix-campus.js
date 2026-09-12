@@ -24,7 +24,7 @@ export function createCampus(scene, room, screens, originalWalls) {
   const outerFloors = instances(groundGeometry, floorMaterial.clone(), ROOM_COUNT - ROOMS_PER_BLOCK);
 
   const shell = new THREE.Group(), s = builders(shell);
-  s.box([64, .8, 64], [0, -.65, 0], 0x102519);
+  s.box([64, .8, 64], [0, -.65, 0], 0x536a51);
   const wallY = ROOM_WALL_HEIGHT / 2 - .25, capY = ROOM_WALL_HEIGHT - .14;
   s.box([61, ROOM_WALL_HEIGHT, .3], [0, wallY, -30.4], 0x112b1a);
   s.box([.3, ROOM_WALL_HEIGHT, 62], [30.6, wallY, 0], 0x152e1e);
