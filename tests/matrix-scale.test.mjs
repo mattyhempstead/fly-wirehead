@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { OrthographicCamera, Vector3 } from '../dist/vendor/three.module.js';
+import { Box3, Frustum, Matrix4, OrthographicCamera, Vector3 } from '../dist/vendor/three.module.js';
 import { blocks, rooms, ROOM_COUNT, ROOMS_PER_BLOCK, ROOM_PITCH, ROOM_SIZE, ROOM_WALL_HEIGHT, BLOCK_COUNT, BLOCK_PITCH, BLOCK_SIZE, BLOCK_SPAN, CAMPUS_CENTER, CAMPUS_SIZE, CAMPUS_SPAN, REPRESENTED_FLIES, visibleRoomCount, visibleBlockCount, revealOpacity } from '../dist/matrix-scale.js';
 import { createOrbitCamera, REVEAL_DURATION } from '../dist/matrix-camera.js';
 
@@ -53,25 +53,53 @@ test('vertical camera panning keeps the rooms under the viewing ray rendered', (
   }
 });
 
-test('rooms fade in gradually, then the outer grid appears immediately at full opacity', () => {
+test('rooms retain their fade while the outer grid is always fully opaque', () => {
   assert.equal(revealOpacity(28).rooms, 0);
   assert.ok(revealOpacity(40).rooms > 0);
   assert.ok(revealOpacity(65).rooms < .5, 'fade spans a wider range than the previous 65–95 interval');
   assert.equal(revealOpacity(110).rooms, 1);
-  assert.deepEqual(revealOpacity(BLOCK_SPAN), { rooms: 1, blocks: 0 }, 'the complete first 10 by 10 grid is revealed on its own');
-  assert.equal(revealOpacity(899.99).blocks, 0);
-  assert.equal(revealOpacity(900).blocks, 1);
-  assert.equal(revealOpacity(900.01).blocks, 1);
-  assert.equal(revealOpacity(1350).blocks, 1);
-  assert.equal(revealOpacity(1800).blocks, 1);
+  assert.deepEqual(revealOpacity(BLOCK_SPAN), { rooms: 1, blocks: 1 });
   let previous = revealOpacity(0);
   for (let span = 1; span <= CAMPUS_SPAN; span++) {
     const current = revealOpacity(span);
     assert.ok(current.rooms >= previous.rooms && current.rooms <= 1);
     assert.ok(current.rooms - previous.rooms < .02, 'neighbouring rooms retain their gradual fade');
-    assert.ok(current.blocks === 0 || current.blocks === 1, 'the outer grid is never partially faded');
+    assert.equal(current.blocks, 1, 'no scale-triggered hiding or fading of the outer grid');
     previous = current;
   }
+});
+
+test('rooms and block plinths are submitted before entering a padded camera frame', () => {
+  const cases = [
+    { span: 120, theta: -.55, phi: 1.1, aspect: 16 / 9, target: [0, 0, 0] },
+    { span: 320, theta: -.55, phi: 1.1, aspect: 16 / 9, target: [0, 0, 0] },
+    { span: 800, theta: -.55, phi: 1.1, aspect: 16 / 9, target: [-35, 0, -35] },
+    { span: 5, theta: 1.2, phi: 1.45, aspect: 2.4, target: [750, 0, 750] },
+    { span: 800, theta: -2.4, phi: 1.45, aspect: 2.4, target: [-500, 200, 1000] },
+    { span: 100, theta: 1.2, phi: .5, aspect: .5, target: [1500, -200, -750] },
+  ];
+  let outerRoomsChecked = 0;
+  for (const { span, theta, phi, aspect, target } of cases) {
+    const radius = Math.max(72, span * 1.4), paddedSpan = span * 1.1;
+    const camera = new OrthographicCamera(-paddedSpan * aspect / 2, paddedSpan * aspect / 2, paddedSpan / 2, -paddedSpan / 2, .1, radius + Math.max(200, span * 2));
+    camera.position.set(target[0] + radius * Math.sin(phi) * Math.sin(theta), target[1] + radius * Math.cos(phi), target[2] + radius * Math.sin(phi) * Math.cos(theta));
+    camera.lookAt(...target); camera.updateMatrixWorld();
+    const frustum = new Frustum().setFromProjectionMatrix(new Matrix4().multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));
+    for (const [items, size, count] of [
+      [rooms, ROOM_SIZE, visibleRoomCount(span, aspect, phi, target)],
+      [blocks, BLOCK_SIZE, visibleBlockCount(span, aspect, phi, target)],
+    ]) {
+      const bounds = new Box3();
+      items.forEach((item, index) => {
+        bounds.min.set(item.x - size / 2, -2, item.z - size / 2);
+        bounds.max.set(item.x + size / 2, ROOM_WALL_HEIGHT, item.z + size / 2);
+        if (!frustum.intersectsBox(bounds)) return;
+        assert.ok(index < count, `missing ${items === rooms ? 'room' : 'block'} at ${item.x},${item.z} before the edge of span ${span}, tilt ${phi}`);
+        if (items === rooms && item.blockId !== blocks[0].id && span < 900) outerRoomsChecked++;
+      });
+    }
+  }
+  assert.ok(outerRoomsChecked > 0, 'outer rooms must already be drawn below the old reveal cutoff');
 });
 
 test('the continuous reveal passes one room, 100 rooms, and all 100 blocks without stopping', () => {
@@ -99,7 +127,8 @@ test('the continuous reveal passes one room, 100 rooms, and all 100 blocks witho
   assert.ok(atRoom.reveal, 'the reveal must keep going after one room');
   assert.ok(atBlock.reveal.elapsed > atRoom.reveal.elapsed);
   assert.ok(atBlock.reveal, 'the reveal must keep going after 100 rooms');
-  assert.equal(revealOpacity(atBlock.span).blocks, 0, 'the first block is visible before the outer grid appears');
+  assert.equal(revealOpacity(atRoom.span).blocks, 1, 'outer geometry is already ready during the room reveal');
+  assert.equal(revealOpacity(atBlock.span).blocks, 1, 'camera framing reveals the next level without switching visibility');
   assert.ok(Math.min(...cruiseSpeeds) > .2, 'no slow section or pause in the middle');
   assert.ok(Math.max(...cruiseSpeeds) - Math.min(...cruiseSpeeds) < 1e-9, 'constant proportional pullback speed');
   assert.deepEqual(controls.snapshot(), { ...views[3], zoom: 1, view: 3, reveal: null });

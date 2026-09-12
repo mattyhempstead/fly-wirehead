@@ -105,8 +105,11 @@ export function createCampus(scene, room, screens) {
     update(span, aspect, orbit) {
       detail = span < DETAIL_SPAN || !ready;
       const fade = revealOpacity(span);
-      room.visible = detail; root.visible = ready && fade.rooms > 0;
-      for (const mesh of [floors, shells, primaryBlock, foundation]) mesh.material.opacity = fade.rooms;
+      room.visible = detail; root.visible = ready;
+      for (const mesh of [floors, shells, primaryBlock, foundation]) {
+        mesh.visible = fade.rooms > 0;
+        mesh.material.opacity = fade.rooms;
+      }
       for (const mesh of [outerFloors, outerShells, outerBlocks]) {
         mesh.visible = fade.blocks > 0;
         mesh.material.opacity = fade.blocks;
@@ -119,7 +122,7 @@ export function createCampus(scene, room, screens) {
       outerFloors.count = outerShells.count = Math.max(0, roomCount - ROOMS_PER_BLOCK);
       outerBlocks.count = Math.max(0, visibleBlockCount(span, aspect, orbit.phi, orbit.target) - 1);
       nearGeometry.count = nearScreens.count = Math.min(81, roomCount);
-      renderedRooms = root.visible ? floors.count + (fade.blocks > 0 ? outerFloors.count : 0) : 1;
+      renderedRooms = root.visible ? (fade.rooms > 0 ? floors.count : 1) + outerFloors.count : 1;
       renderedBlocks = root.visible && fade.blocks > 0 ? outerBlocks.count + 1 : 1;
       // The central room is either the real geometry or its proxy, never both.
       if (detail !== previousDetail) {

@@ -32,10 +32,12 @@ export const rooms = blocks.flatMap(block => Array.from({ length: ROOMS_PER_BLOC
 })).sort((a, b) => a.ring - b.ring || a.id - b.id);
 
 function visibleCount(items, margin, span, aspect, phi, target) {
-  const reach = span * .5 * Math.hypot(aspect, 1 / Math.max(.2, Math.cos(phi)));
+  const reach = span * .5 * Math.hypot(aspect, 1 / Math.max(.05, Math.cos(phi)));
   // Include where the viewing ray hits the floor after vertical screen panning.
   const offset = Math.max(Math.abs(target[0]), Math.abs(target[2])) + Math.abs(target[1]) * Math.tan(phi);
-  const limit = reach + offset + margin;
+  // Submit a padded neighbourhood before its edges can enter the frame, also
+  // accounting for raised walls at low camera angles. Culling is never a reveal.
+  const limit = reach * 1.15 + offset + margin + ROOM_PITCH + ROOM_WALL_HEIGHT * Math.tan(phi);
   let low = 0, high = items.length;
   while (low < high) {
     const mid = (low + high) >>> 1;
@@ -48,7 +50,7 @@ export function visibleRoomCount(span, aspect, phi, target = [0, 0, 0]) {
   return visibleCount(rooms, ROOM_SIZE, span, aspect, phi, target);
 }
 export function visibleBlockCount(span, aspect, phi, target = [0, 0, 0]) {
-  return visibleCount(blocks, BLOCK_SIZE / 2 + ROOM_PITCH / 2, span, aspect, phi, target);
+  return visibleCount(blocks, BLOCK_SIZE + ROOM_PITCH / 2, span, aspect, phi, target);
 }
 function smoothstep(value, start, end) {
   const t = clamp((value - start) / (end - start), 0, 1);
@@ -57,6 +59,7 @@ function smoothstep(value, start, end) {
 export function revealOpacity(span) {
   return {
     rooms: smoothstep(span, 28, 110),
-    blocks: span >= 900 ? 1 : 0,
+    // The outer grid is already opaque offscreen; only the camera reveals it.
+    blocks: 1,
   };
 }

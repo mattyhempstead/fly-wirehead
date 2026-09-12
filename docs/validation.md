@@ -161,3 +161,9 @@ Moved the original room's geometry replacement from span 180 to span 4,000. Its 
 ## Tighter outer grid without a fade — 2026-09-12
 
 Reduced block spacing from 800 to 750 units, leaving 16-unit gaps instead of 66. The final camera span is 8,000 to fit the smaller footprint. The outer grid switches directly from hidden to fully opaque at span 900; the inner room fade and delayed original-room detail replacement are retained. All six layout/reveal checks passed, including the exact opacity boundary, absence of partially faded outer blocks, unique non-overlapping placement, continuous camera motion, and final framing. Browser inspection confirmed the denser full grid and no console errors or warnings.
+
+## Reveal existing blocks through camera framing — 2026-09-12
+
+Removed the span-900 visibility switch. Outer blocks are now fully opaque from the start and available independently of the original block's room fade. Expanded the drawing neighbourhood beyond the frame, accounting for low camera angles, wall height, and larger block plinths, so additional instances enter the draw before they enter view.
+
+All **55 JavaScript checks** passed. A new Three.js frustum regression checks room and block bounds against a frame padded by 10%, including outer rooms below the old cutoff, close panned views, low viewing angles, and portrait/landscape frames. Browser inspection at span 800 confirmed surrounding blocks already present around the central block, with 1,521 submitted rooms, one detailed room, and 60 fps. The completed reveal retained 10,000 rooms, seven draw calls, and 60 fps. Shared telemetry stayed connected and there were no console errors or warnings.
