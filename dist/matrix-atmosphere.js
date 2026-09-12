@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { bake, builders } from './matrix-geometry.js';
 import { random } from './matrix-timeline.js';
+import { ROOM_WALL_HEIGHT } from './matrix-scale.js';
 
 // Environmental animation only; it never enters the phones or neural input.
 export function createAtmosphere(scene, stations, { socketX, wireHeight }) {
@@ -36,6 +37,7 @@ export function createAtmosphere(scene, stations, { socketX, wireHeight }) {
     l.box([.035, 4.1, .36], [x - .712, 3.55, z], 0xffffff);
     h.rod([x, 7.1, z], [29.8, 7.1, z], .09, 0x223c2b);
   }
+  hardware.scale.y = lights.scale.y = .62;
   const machinery = new THREE.Mesh(bake(hardware), steel); machinery.receiveShadow = machinery.castShadow = true; scene.add(machinery);
   scene.add(new THREE.Mesh(bake(lights), emission));
 
@@ -75,8 +77,9 @@ export function createAtmosphere(scene, stations, { socketX, wireHeight }) {
   const codeTexture = new THREE.CanvasTexture(codeCanvas); codeTexture.colorSpace = THREE.SRGBColorSpace;
   codeTexture.generateMipmaps = false; codeTexture.minFilter = THREE.LinearFilter;
   const codeMaterial = new THREE.MeshBasicMaterial({ map: codeTexture, transparent: true, opacity: .95, toneMapped: false, depthWrite: false, fog: false });
-  const codeWall = new THREE.Mesh(new THREE.PlaneGeometry(59, 16), codeMaterial); codeWall.position.set(0, 9.5, -30.20); scene.add(codeWall);
-  const codeSide = new THREE.Mesh(new THREE.PlaneGeometry(54, 16), codeMaterial); codeSide.position.set(30.38, 9.5, -2); codeSide.rotation.y = -Math.PI / 2; scene.add(codeSide);
+  const codeHeight = ROOM_WALL_HEIGHT - .6, codeY = ROOM_WALL_HEIGHT / 2 - .05;
+  const codeWall = new THREE.Mesh(new THREE.PlaneGeometry(59, codeHeight), codeMaterial); codeWall.position.set(0, codeY, -30.20); scene.add(codeWall);
+  const codeSide = new THREE.Mesh(new THREE.PlaneGeometry(54, codeHeight), codeMaterial); codeSide.position.set(30.38, codeY, -2); codeSide.rotation.y = -Math.PI / 2; scene.add(codeSide);
   const glyphs = '0123456789アイウエオカキクケコサシスセソタチツテトナニヌネノ+-:<>';
   const streams = Array.from({ length: 80 }, (_, i) => ({ x: i * 13, offset: random(i + 200) * 700, speed: 14 + random(i + 220) * 25, length: 7 + Math.floor(random(i + 240) * 17) }));
   let lastCode = -1;

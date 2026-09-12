@@ -2,21 +2,21 @@
 
 **Born to fly. Wired to stay.**
 
-A nearly square room of **96 flies in 8 columns and 12 rows**, each wired in from above and facing its own phone. Pull back and the room becomes one of **10,000 blocks in a 100 × 100 grid**, representing **960,000 flies**.
+A nearly square room of **96 flies in 8 columns and 12 rows**, each wired in from above and facing its own phone. Pull back to reveal **10 × 10 rooms in one block**, then **10 × 10 of those blocks**: **10,000 rooms and 960,000 flies** in total.
 
 This is the `matrix` branch of [Fly / Wirehead](https://github.com/mattyhempstead/fly-wirehead/tree/main). It uses the same faceted fly, real insect footage, and local Python/C++ connectome. **One shared brain serves the whole floor.** This branch is primarily a visual demonstration.
 
 ## The floor
 
 - **96 stations:** aligned metal benches, station IDs, and a regular 8 × 12 layout. A short wire rises from each head into a thin horizontal supply line; the lines meet a horizontal collector at the rear racks. Each fly's back right leg has a metal cuff and linked chain running over the bench edge to a bolted floor anchor.
-- **A containment chamber:** blackened metal, green pools of light, falling code on towering walls, rear machine banks and cable bundles, power columns, drifting floor haze, and subtle surveillance scanlines. Original fly colors and full-color insect footage remain visible against the dark environment.
+- **A containment chamber:** blackened metal, green pools of light, falling code on low walls, rear machine banks and cable bundles, power columns, drifting floor haze, and subtle surveillance scanlines. Original fly colors and full-color insect footage remain visible against the dark environment.
 - **96 independent feeds:** each fly has its own unique shuffled loop through all twelve insect Shorts, playing every clip once before repeating. Playback offsets and swipe timers are independent. Swipes occur roughly every 2.6–3.5 seconds, staggered across stations.
 - **Head-on phones:** each portrait screen points directly toward its fly; the phone has no attached machinery.
 - **One shared connectome:** the browser samples the phones in rotation, submitting one display per neural observation. Measured motor activity modulates wing movement across the floor.
-- **Camera controls:** factory floor, along the line, a single station, and all blocks. Choose Orbit or Pan for dragging, use Shift-drag to pan at any time, or use the four pan arrows below the scene. Recenter undoes panning while keeping your angle and zoom. Scroll to zoom; the toolbar also provides pause and fullscreen.
-- **The big reveal:** press **Play reveal** for a 30-second shot: one fly near the centre of the central room → the complete room → a huge 100 × 100 grid of rooms. The opening restores the saved camera angle and pan, also available through Single station. After the opening hold, the pullback maintains a steady proportional speed through the room reveal, easing only at the start and finish. Replay it whenever you like; dragging, scrolling, or choosing a view takes over the camera.
+- **Camera controls:** factory floor, along the line, a single station, 100 rooms, and all blocks. Choose Orbit or Pan for dragging, use Shift-drag to pan at any time, or use the four pan arrows below the scene. Recenter undoes panning while keeping your angle and zoom. Scroll to zoom; the toolbar also provides pause and fullscreen.
+- **The big reveal:** press **Play reveal** for a 30-second shot: one fly near the centre of the central room → the complete room → a 10 × 10 block of rooms → a 10 × 10 grid of those blocks. Wider service roads and low borders separate the larger blocks; neighbouring rooms fade in early and gradually, with the outer blocks appearing after the first 100 rooms are visible. The opening restores the saved camera angle and pan, also available through Single station. After the opening hold, the pullback maintains a steady proportional speed through both grid reveals, easing only at the start and finish. Replay it whenever you like; dragging, scrolling, or choosing a view takes over the camera.
 - **A clean 16:9 view:** the scene has no station or block text overlays. Camera controls and the shared neural readout sit below it; fullscreen preserves the aspect ratio with letterboxing.
-- **Efficient distance rendering:** one detailed room has the live fly models, restraints, and 96 independent feeds. Nearby copies use simple raised benches, flies, and video screens. Distant blocks use a rendered image of the actual room on simple 3D shells. The 960,000 figure describes the visual scene; there is still only one shared brain.
+- **Efficient distance rendering:** one detailed room has the live fly models, restraints, and 96 independent feeds. Nearby copies use simple raised benches, flies, and video screens. Distant rooms use a rendered image of the actual room on simple 3D shells. The 960,000 figure describes the visual scene; there is still only one shared brain.
 
 The demonstration uses twelve source videos with 96 independent playheads, rather than 96 unique source videos. The fourth-second limit on `PBWmPoLjVvA` is preserved. There is no video audio in this branch.
 
@@ -54,8 +54,8 @@ Swiping, breathing, and clip selection are choreographed. The model uses reconst
 
 | Input | Action |
 | --- | --- |
-| View buttons / C | Factory, row, single station, or all blocks |
-| Play / Replay reveal | Start the single-fly-to-10,000-block animation; resumes a paused floor |
+| View buttons / C | Factory, row, single station, 100 rooms, or all blocks |
+| Play / Replay reveal | Start the fly → 100 rooms → 100 blocks animation; resumes a paused floor |
 | Drag | Orbit, or pan when Pan mode is selected |
 | Shift + drag | Pan in either drag mode |
 | Pan arrows / arrow keys with the scene focused | Move the scene left, right, up, or down |

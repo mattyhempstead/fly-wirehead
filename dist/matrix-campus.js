@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { bake, builders } from './matrix-geometry.js';
 import { random, stations } from './matrix-timeline.js';
 import { FLY_X, FLY_Y, FLY_SCALE } from './matrix-fly.js';
-import { blocks, BLOCK_COUNT, BLOCK_SIZE, BLOCK_PITCH, CAMPUS_CENTER, DETAIL_SPAN, visibleBlockCount } from './matrix-scale.js';
+import { blocks, rooms, ROOM_COUNT, ROOMS_PER_BLOCK, ROOM_SIZE, ROOM_WALL_HEIGHT, BLOCK_COUNT, BLOCK_SIZE, CAMPUS_SIZE, CAMPUS_CENTER, DETAIL_SPAN, visibleRoomCount, visibleBlockCount, revealOpacity } from './matrix-scale.js';
 
 export function createCampus(scene, room, screens) {
   const root = new THREE.Group(); scene.add(root);
@@ -13,21 +13,40 @@ export function createCampus(scene, room, screens) {
   });
   const top = new THREE.OrthographicCamera(-32, 32, 32, -32, .1, 150);
   top.position.set(0, 100, 0); top.up.set(0, 0, -1); top.lookAt(0, 0, 0);
-  const groundGeometry = new THREE.PlaneGeometry(BLOCK_SIZE, BLOCK_SIZE);
+  const groundGeometry = new THREE.PlaneGeometry(ROOM_SIZE, ROOM_SIZE);
   groundGeometry.rotateX(-Math.PI / 2);
-  const floors = new THREE.InstancedMesh(groundGeometry, new THREE.MeshBasicMaterial({ map: snapshot.texture, fog: false, transparent: true }), BLOCK_COUNT);
-  floors.frustumCulled = false; root.add(floors);
+  function instances(geometry, material, count) {
+    const mesh = new THREE.InstancedMesh(geometry, material, count);
+    mesh.frustumCulled = false; root.add(mesh); return mesh;
+  }
+  const floorMaterial = new THREE.MeshBasicMaterial({ map: snapshot.texture, fog: false, transparent: true });
+  const floors = instances(groundGeometry, floorMaterial, ROOMS_PER_BLOCK);
+  const outerFloors = instances(groundGeometry, floorMaterial.clone(), ROOM_COUNT - ROOMS_PER_BLOCK);
 
   const shell = new THREE.Group(), s = builders(shell);
   s.box([64, .8, 64], [0, -.65, 0], 0x102519);
-  s.box([61, 20, .3], [0, 9.75, -30.4], 0x112b1a);
-  s.box([.3, 20, 62], [30.6, 9.75, 0], 0x152e1e);
-  s.box([61, .24, .46], [0, 19.86, -30.4], 0x52794b);
-  s.box([.46, .24, 62], [30.6, 19.86, 0], 0x52794b);
+  const wallY = ROOM_WALL_HEIGHT / 2 - .25, capY = ROOM_WALL_HEIGHT - .14;
+  s.box([61, ROOM_WALL_HEIGHT, .3], [0, wallY, -30.4], 0x112b1a);
+  s.box([.3, ROOM_WALL_HEIGHT, 62], [30.6, wallY, 0], 0x152e1e);
+  s.box([61, .24, .46], [0, capY, -30.4], 0x52794b);
+  s.box([.46, .24, 62], [30.6, capY, 0], 0x52794b);
   // Small uninterrupted service lights make each room legible at district scale.
   s.box([58, .05, .14], [0, .025, 30.5], 0x6b9851);
-  const shells = new THREE.InstancedMesh(bake(shell), new THREE.MeshBasicMaterial({ vertexColors: true, fog: false, transparent: true }), BLOCK_COUNT);
-  shells.frustumCulled = false; root.add(shells);
+  const shellGeometry = bake(shell), shellMaterial = new THREE.MeshBasicMaterial({ vertexColors: true, fog: false, transparent: true });
+  const shells = instances(shellGeometry, shellMaterial, ROOMS_PER_BLOCK);
+  const outerShells = instances(shellGeometry, shellMaterial.clone(), ROOM_COUNT - ROOMS_PER_BLOCK);
+
+  // Wide service roads and a low outlined plinth make 100-room blocks readable
+  // at the second reveal, without adding another set of obstructing walls.
+  const blockRoot = new THREE.Group(), p = builders(blockRoot), halfBlock = BLOCK_SIZE / 2;
+  p.box([BLOCK_SIZE, .7, BLOCK_SIZE], [0, -1.35, 0], 0x11251a);
+  for (const side of [-1, 1]) {
+    p.box([BLOCK_SIZE - 2, .055, 1.1], [0, -.972, side * (halfBlock - 1)], 0x5c8059);
+    p.box([1.1, .055, BLOCK_SIZE - 2], [side * (halfBlock - 1), -.972, 0], 0x5c8059);
+  }
+  const blockGeometry = bake(blockRoot), blockMaterial = shellMaterial.clone();
+  const primaryBlock = instances(blockGeometry, blockMaterial, 1);
+  const outerBlocks = instances(blockGeometry, blockMaterial.clone(), BLOCK_COUNT - 1);
   // Nearby copies retain raised benches, phones, and fly silhouettes. Cap this
   // tier at 81 rooms, then fade it into the room snapshot as it becomes tiny.
   const nearRoot = new THREE.Group(), n = builders(nearRoot);
@@ -50,18 +69,25 @@ export function createCampus(scene, room, screens) {
   nearGeometry.renderOrder = nearScreens.renderOrder = 1;
   root.add(nearGeometry, nearScreens);
   const transform = new THREE.Object3D(), color = new THREE.Color();
+  for (let i = 0; i < rooms.length; i++) {
+    const copy = rooms[i]; transform.position.set(copy.x, 0, copy.z); transform.updateMatrix();
+    const local = i < ROOMS_PER_BLOCK, index = local ? i : i - ROOMS_PER_BLOCK;
+    const floorBatch = local ? floors : outerFloors, shellBatch = local ? shells : outerShells;
+    floorBatch.setMatrixAt(index, transform.matrix); shellBatch.setMatrixAt(index, transform.matrix);
+    if (i < 81) { nearGeometry.setMatrixAt(i, transform.matrix); nearScreens.setMatrixAt(i, transform.matrix); }
+    const shade = i === 0 ? 1 : .87 + random(copy.id + 411) * .2;
+    color.setRGB(shade, shade, shade); floorBatch.setColorAt(index, color); shellBatch.setColorAt(index, color);
+  }
   for (let i = 0; i < blocks.length; i++) {
     const block = blocks[i]; transform.position.set(block.x, 0, block.z); transform.updateMatrix();
-    floors.setMatrixAt(i, transform.matrix); shells.setMatrixAt(i, transform.matrix);
-    if (i < 81) { nearGeometry.setMatrixAt(i, transform.matrix); nearScreens.setMatrixAt(i, transform.matrix); }
-    const shade = i === 0 ? 1 : .87 + random(block.id + 411) * .2;
-    color.setRGB(shade, shade, shade); floors.setColorAt(i, color); shells.setColorAt(i, color);
+    (i === 0 ? primaryBlock : outerBlocks).setMatrixAt(i === 0 ? 0 : i - 1, transform.matrix);
   }
-  const foundation = new THREE.Mesh(new THREE.PlaneGeometry(BLOCK_PITCH * 100 + 30, BLOCK_PITCH * 100 + 30), new THREE.MeshBasicMaterial({ color: 0x020805, fog: false, transparent: true }));
-  foundation.rotation.x = -Math.PI / 2; foundation.position.set(CAMPUS_CENTER[0], -1.2, CAMPUS_CENTER[2]); root.add(foundation);
-  foundation.renderOrder = -2; floors.renderOrder = -1;
+  const foundation = new THREE.Mesh(new THREE.PlaneGeometry(CAMPUS_SIZE + 60, CAMPUS_SIZE + 60), new THREE.MeshBasicMaterial({ color: 0x020805, fog: false, transparent: true }));
+  foundation.rotation.x = -Math.PI / 2; foundation.position.set(CAMPUS_CENTER[0], -1.75, CAMPUS_CENTER[2]); root.add(foundation);
+  foundation.renderOrder = -3; primaryBlock.renderOrder = outerBlocks.renderOrder = -2;
+  floors.renderOrder = outerFloors.renderOrder = -1;
   root.visible = false;
-  let ready = false, lastCapture = -Infinity, detail = true, previousDetail = null, renderedBlocks = 0;
+  let ready = false, lastCapture = -Infinity, detail = true, previousDetail = null, renderedRooms = 0, renderedBlocks = 0;
 
   return {
     get ready() { return ready; },
@@ -78,16 +104,24 @@ export function createCampus(scene, room, screens) {
     },
     update(span, aspect, orbit) {
       detail = span < DETAIL_SPAN || !ready;
-      const fade = THREE.MathUtils.smoothstep(span, 65, 95);
-      room.visible = detail; root.visible = ready && fade > 0;
-      for (const mesh of [floors, shells, foundation]) mesh.material.opacity = fade;
-      const nearFade = fade * (1 - THREE.MathUtils.smoothstep(span, 350, 600));
+      const fade = revealOpacity(span);
+      room.visible = detail; root.visible = ready && fade.rooms > 0;
+      for (const mesh of [floors, shells, primaryBlock, foundation]) mesh.material.opacity = fade.rooms;
+      for (const mesh of [outerFloors, outerShells, outerBlocks]) {
+        mesh.visible = fade.blocks > 0;
+        mesh.material.opacity = fade.blocks;
+      }
+      const nearFade = fade.rooms * (1 - THREE.MathUtils.smoothstep(span, 350, 600));
       nearGeometry.visible = nearScreens.visible = nearFade > 0;
       nearGeometry.material.opacity = nearScreens.material.opacity = nearFade;
-      renderedBlocks = visibleBlockCount(span, aspect, orbit.phi, orbit.target);
-      floors.count = shells.count = renderedBlocks;
-      nearGeometry.count = nearScreens.count = Math.min(81, renderedBlocks);
-      // The central block is either the real room or its proxy, never both.
+      const roomCount = visibleRoomCount(span, aspect, orbit.phi, orbit.target);
+      floors.count = shells.count = Math.min(ROOMS_PER_BLOCK, roomCount);
+      outerFloors.count = outerShells.count = Math.max(0, roomCount - ROOMS_PER_BLOCK);
+      outerBlocks.count = Math.max(0, visibleBlockCount(span, aspect, orbit.phi, orbit.target) - 1);
+      nearGeometry.count = nearScreens.count = Math.min(81, roomCount);
+      renderedRooms = root.visible ? floors.count + (fade.blocks > 0 ? outerFloors.count : 0) : 1;
+      renderedBlocks = root.visible && fade.blocks > 0 ? outerBlocks.count + 1 : 1;
+      // The central room is either the real geometry or its proxy, never both.
       if (detail !== previousDetail) {
         transform.position.set(0, 0, 0); transform.scale.setScalar(detail ? 0 : 1); transform.updateMatrix();
         floors.setMatrixAt(0, transform.matrix); shells.setMatrixAt(0, transform.matrix);
@@ -97,7 +131,7 @@ export function createCampus(scene, room, screens) {
         previousDetail = detail;
       }
     },
-    stats() { return { blocks: BLOCK_COUNT, renderedBlocks, detailedRooms: detail ? 1 : 0 }; },
+    stats() { return { rooms: ROOM_COUNT, roomsPerBlock: ROOMS_PER_BLOCK, blocks: BLOCK_COUNT, renderedRooms, renderedBlocks, detailedRooms: detail ? 1 : 0 }; },
     dispose() { snapshot.dispose(); }
   };
 }

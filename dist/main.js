@@ -64,6 +64,7 @@ $('#pause').addEventListener('click', () => void togglePause());
 $('#fullscreen').addEventListener('click', () => void fullscreen());
 $('#reveal').addEventListener('click', () => void startReveal());
 document.querySelectorAll('[data-view]').forEach(button => button.addEventListener('click', () => setView(Number(button.dataset.view))));
+const viewOrder = [...document.querySelectorAll('[data-view]')].map(button => Number(button.dataset.view));
 const panDirections = { left: [-1, 0], up: [0, -1], down: [0, 1], right: [1, 0] };
 function panView(direction, distance = .12) {
   const [dx, dy] = panDirections[direction], rect = canvas.getBoundingClientRect();
@@ -87,7 +88,7 @@ document.addEventListener('keydown', event => {
   if (['Space', 'KeyC', 'KeyF'].includes(event.code)) event.preventDefault();
   if (event.repeat) return;
   if (event.code === 'Space') void togglePause();
-  if (event.code === 'KeyC') setView((view + 1) % 4);
+  if (event.code === 'KeyC') setView(viewOrder[(viewOrder.indexOf(view) + 1) % viewOrder.length]);
   if (event.code === 'KeyF') void fullscreen();
 });
 const clock = createFrameClock(); let hudClock = 0;
@@ -116,8 +117,8 @@ if (document.modelContext?.registerTool) {
   try {
     Promise.resolve(document.modelContext.registerTool({
       name: 'control_fly_matrix', title: 'Control the fly matrix demonstration',
-      description: 'Inspect 96 independent feeds and shared neural measurements, play the reveal from one fly to 10,000 blocks, select camera views, and pause or resume the floor.',
-      inputSchema: { type: 'object', properties: { action: { type: 'string', enum: ['status', 'pause', 'resume', 'reveal', 'factory_view', 'row_view', 'station_view', 'blocks_view', 'save'] } }, required: ['action'], additionalProperties: false },
+      description: 'Inspect 96 independent feeds and shared neural measurements, reveal one fly, a 10 by 10 room block, then 10 by 10 blocks, select camera views, and pause or resume the floor.',
+      inputSchema: { type: 'object', properties: { action: { type: 'string', enum: ['status', 'pause', 'resume', 'reveal', 'factory_view', 'row_view', 'station_view', 'block_view', 'blocks_view', 'save'] } }, required: ['action'], additionalProperties: false },
       annotations: { readOnlyHint: false, untrustedContentHint: false },
       async execute(input) {
         if (commandPending) throw new Error('A command is already running');
@@ -128,6 +129,7 @@ if (document.modelContext?.registerTool) {
           else if (input.action === 'row_view') setView(1);
           else if (input.action === 'station_view') setView(2);
           else if (input.action === 'blocks_view') setView(3);
+          else if (input.action === 'block_view') setView(4);
           else if (input.action === 'reveal') await startReveal();
           else if (input.action === 'save') await client.action('save');
           else if (!['status', 'pause', 'resume'].includes(input.action)) throw new TypeError('Unknown action');

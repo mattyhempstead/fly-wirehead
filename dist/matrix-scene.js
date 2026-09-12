@@ -8,7 +8,7 @@ import { createRestraints } from './matrix-restraints.js';
 import { createAtmosphere } from './matrix-atmosphere.js';
 import { createOrbitCamera } from './matrix-camera.js';
 import { createCampus } from './matrix-campus.js';
-import { CAMPUS_CENTER, CAMPUS_SPAN, DETAIL_SPAN, REPRESENTED_FLIES } from './matrix-scale.js';
+import { CAMPUS_CENTER, CAMPUS_SPAN, BLOCK_CENTER, BLOCK_SPAN, ROOM_WALL_HEIGHT, DETAIL_SPAN, REPRESENTED_FLIES } from './matrix-scale.js';
 
 export function createMatrix(canvas, feed) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
@@ -90,11 +90,12 @@ export function createMatrix(canvas, feed) {
     f.box([49, .015, .075], [0, -.02, z], 0x64704a);
     for (let i = -24; i < 25; i += 2) f.box([.9, .018, .22], [i, -.015, z + Math.sign(z) * .35], 0x64704a);
   }
-  f.box([61, 20, .28], [0, 9.75, -30.4], 0x0a160e);
-  f.box([.28, 20, 62], [30.6, 9.75, 0], 0x0a160e);
+  const wallY = ROOM_WALL_HEIGHT / 2 - .25;
+  f.box([61, ROOM_WALL_HEIGHT, .28], [0, wallY, -30.4], 0x0a160e);
+  f.box([.28, ROOM_WALL_HEIGHT, 62], [30.6, wallY, 0], 0x0a160e);
   for (let x = -28; x <= 28; x += 7) {
-    f.box([.18, 20, .4], [x, 9.75, -30.1], 0x1c3123);
-    f.box([4.5, .13, .035], [x, 18.7, -29.92], 0x627c59);
+    f.box([.18, ROOM_WALL_HEIGHT, .4], [x, wallY, -30.1], 0x1c3123);
+    f.box([4.5, .13, .035], [x, ROOM_WALL_HEIGHT - 1.3, -29.92], 0x627c59);
   }
   const environment = new THREE.Mesh(bake(factory), solid); environment.receiveShadow = true; room.add(environment);
   const atmosphere = createAtmosphere(room, stations, { socketX, wireHeight });
@@ -146,6 +147,7 @@ export function createMatrix(canvas, feed) {
     { theta: -.85, phi: 1.13, span: 12, target: [-8, 1.5, (ROWS / 2 - 1) * PITCH_Z] },
     openingView,
     { theta: -.55, phi: 1.10, span: CAMPUS_SPAN, target: [...CAMPUS_CENTER] },
+    { theta: -.55, phi: 1.10, span: BLOCK_SPAN, target: [...BLOCK_CENTER] },
   ];
   const controls = createOrbitCamera(views);
   let fittedSpan = 42;

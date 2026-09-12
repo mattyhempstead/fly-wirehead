@@ -18,11 +18,11 @@
   <main>
     <div class="intro">
       <div><p class="eyebrow">EXPERIMENT 003 / CONTAINMENT ACTIVE</p><h1>Born to fly. <span>Wired to stay.</span></h1></div>
-      <p class="intro-note">96 flies per room.<br>10,000 rooms. One endless feed.</p>
+      <p class="intro-note">100 rooms per block. 100 blocks.<br>960,000 flies. One endless feed.</p>
     </div>
-    <section class="observation" aria-label="Fly factory and 100 by 100 grid of blocks">
+    <section class="observation" aria-label="Fly factory, 10 by 10 rooms per block, and 10 by 10 blocks">
       <div class="scene-wrap" id="scene-wrap">
-        <canvas id="scene" tabindex="0" aria-label="96 flies in an 8 by 12 room, with a reveal of 10,000 repeated room blocks. Drag to orbit; Shift-drag or select Pan to move the view; arrow keys pan when focused; scroll to zoom; Space pauses."></canvas>
+        <canvas id="scene" tabindex="0" aria-label="96 flies per room. Reveal 10 by 10 rooms, then 10 by 10 blocks of rooms. Drag to orbit; Shift-drag or select Pan to move the view; arrow keys pan when focused; scroll to zoom; Space pauses."></canvas>
         <div class="scene-error" id="scene-error" role="alert" hidden>Your browser couldn’t start the 3D scene. A browser with WebGL 2 is required.</div>
       </div>
       <div class="toolbar">
@@ -30,6 +30,7 @@
           <button type="button" data-view="0" aria-pressed="true">Factory floor</button>
           <button type="button" data-view="1" aria-pressed="false">Along the line</button>
           <button type="button" data-view="2" aria-pressed="false">Single station</button>
+          <button type="button" data-view="4" aria-pressed="false">100 rooms</button>
           <button type="button" data-view="3" aria-pressed="false">All blocks</button>
         </div>
         <div class="play-buttons"><button type="button" id="reveal" disabled>Play reveal</button><button type="button" id="pause" aria-pressed="false">Pause floor</button><button type="button" id="fullscreen" aria-label="Enter fullscreen">⛶</button></div>
@@ -55,7 +56,7 @@
       <div class="neural-readout"><span id="spike-value">—</span> spikes / sample <span class="separator">·</span> <span id="input-source">Waiting for phone pixels</span></div>
     </div>
     <p id="engine-message" role="status"></p>
-    <footer><p>96 independent playheads. 10,000 blocks. 960,000 flies represented.<br><span>One shared brain. Distant rooms use visual copies; swiping is choreographed.</span></p><a href="./media/playlist.json" target="_blank" rel="noreferrer">Video credits ↗</a></footer>
+    <footer><p>100 blocks × 100 rooms × 96 flies.<br><span>One shared brain. 96 independent playheads. Distant rooms use visual copies; swiping is choreographed.</span></p><a href="./media/playlist.json" target="_blank" rel="noreferrer">Video credits ↗</a></footer>
   </main>
   <script type="module" src="./main.js"></script>
 </body>
