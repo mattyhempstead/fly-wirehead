@@ -4,7 +4,7 @@
 
 The `recovery` branch of [Fly / Wirehead](https://github.com/mattyhempstead/fly-wirehead/tree/main): the same faceted fly and real local connectome, now in a five-scene rehabilitation sequence. **166,700 neurons. 25.6 million connections. Live visual input and measured dopamine-neuron activity.**
 
-A small white wrap stays around the front right leg's joint—the leg that used to swipe. The fly walks upright on its hind pair, tucks its middle legs, and uses its front pair as arms. The world uses metre-scale rehabilitation equipment and a real, 36-step outdoor staircase. The digital specimen is enlarged so its limbs and movements remain visible.
+From the walking scene onward, a small white wrap stays around the front right leg's joint—the leg that used to swipe. The opening close-up has no bandage. The fly walks upright on its hind pair, tucks its middle legs, and uses its front pair as arms. The world uses metre-scale rehabilitation equipment and a real, 36-step outdoor staircase. The digital specimen is enlarged so its limbs and movements remain visible.
 
 ## The sequence
 

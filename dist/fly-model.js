@@ -79,6 +79,7 @@ export function createRecoveryFly() {
   // A cloth wrap follows the anatomical front-right joint, not a world-space prop.
   const right = limbs.find(limb => limb.side === 1 && limb.index === 0);
   const wrap = new THREE.Group(); right.joint.add(wrap);
+  wrap.visible = false;
   // The joint orb is scaled to .055; keep the cloth at its intended model size.
   wrap.scale.setScalar(1 / .055);
   const gauze = material(0xfff9e8, { roughness: 1, metalness: 0 });
@@ -104,7 +105,8 @@ export function createRecoveryFly() {
     root, fly, head, limbs,
     socket(target = new THREE.Vector3()) { return head.localToWorld(target.set(0, .47, 0)); },
     eyes(target = new THREE.Vector3()) { return head.localToWorld(target.set(.49, .16, 0)); },
-    pose({ time, gait = 0, phase = 0, terrainTravel = 0, settle = 0, stride = .18, rail = false, stumble = 0, victory = 0, motor = 0, turn = 0, groundAt = null, groundY = .04, biped = false }) {
+    pose({ time, gait = 0, phase = 0, terrainTravel = 0, settle = 0, stride = .18, rail = false, stumble = 0, victory = 0, motor = 0, turn = 0, groundAt = null, groundY = .04, biped = false, bandaged = false }) {
+      wrap.visible = bandaged;
       root.updateMatrixWorld(true);
       const inverseRotation = root.quaternion.clone().invert();
       const elapsed = lastPoseTime === null ? 0 : Math.max(0, Math.min(.05, time - lastPoseTime));

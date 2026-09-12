@@ -100,7 +100,7 @@ export function createRecoveryLab(canvas) {
     const planned = recoveryCamera(frame, fly.position.toArray()), shot = planned.shot;
     cameraAt.set(...planned.position); target.set(...planned.target);
     fly.position.y += (Math.sin(time * 2) * .005 + neural.motor * Math.sin(time * 8) * .008) * (1 - frame.stumble);
-    specimen.pose({ time: reduced ? 0 : time, gait: reduced ? 0 : gait, phase: reduced ? 0 : phase, terrainTravel, settle, stride, rail, stumble: frame.stumble, victory, motor: neural.motor, turn: neural.turn, groundAt, groundY, biped });
+    specimen.pose({ time: reduced ? 0 : time, gait: reduced ? 0 : gait, phase: reduced ? 0 : phase, terrainTravel, settle, stride, rail, stumble: frame.stumble, victory, motor: neural.motor, turn: neural.turn, groundAt, groundY, biped, bandaged: frame.id !== 'unplugged' });
     world.animate(frame, specimen.socket());
     const outside = frame.id === 'stairs' || frame.id === 'victory';
     scene.background.set(outside ? 0xecdcb9 : 0xd9e4d8); scene.fog.color.copy(scene.background);

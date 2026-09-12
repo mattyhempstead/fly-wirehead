@@ -106,3 +106,7 @@ All **40 JavaScript checks** passed. The two new checks sweep complete strides a
 ## Flexible elbow bandage — 2026-09-12
 
 The rigid cuff is replaced by two tapered gauze sleeves joined over a rounded elbow pad. Each sleeve follows its own arm segment, so the white wrap bends around the actual joint in every pose. The close-up and running elbow were checked in the browser. All **40 JavaScript checks** pass; arm movement, playback, and neural behavior are unchanged.
+
+## Lower observer cameras and delayed bandage — 2026-09-12
+
+Observer cameras now sit closer to eye level with a gentle downward angle; the final victory orbit stays low. The bandage is hidden throughout the opening and appears from walking onward, with visibility reset on replay. Browser inspection checked the opening, rails, treadmill, staircase, and final victory framing. A full replay reached victory at 12 seconds with connected neural telemetry and no browser errors or warnings. All **40 JavaScript checks** passed, including camera continuity. The eye camera, choreography, and neural dynamics are unchanged.

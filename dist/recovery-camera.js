@@ -11,24 +11,24 @@ export function recoveryCamera(frame, position) {
   const t = frame.id === 'stairs' ? frame.motionTime : frame.local;
   if (frame.id === 'unplugged') {
     const p = smoother(t / frame.duration);
-    return view([lerp(1.82, 2.4, p), lerp(1.73, 1.95, p), lerp(.1, .38, p)], [.30, 1.4, 0], 'face');
+    return view([lerp(1.82, 2.4, p), lerp(1.62, 1.82, p), lerp(.1, .38, p)], [.30, 1.4, 0], 'face');
   }
   if (frame.id === 'walking') {
     const p = smoother(t / frame.duration);
-    return view(add(position, [lerp(2.7, 1.45, p), lerp(1.5, 1.65, p), lerp(3.2, 3.65, p)]), add(position, [.06, .12, 0]), 'rails-tracking');
+    return view(add(position, [lerp(2.7, 1.45, p), lerp(1, 1.05, p), lerp(3.2, 3.65, p)]), add(position, [.06, .12, 0]), 'rails-tracking');
   }
   if (frame.id === 'treadmill') {
     const p = smoother(t / frame.duration);
-    return view([lerp(2.7, .8, p), lerp(3.1, 2.65, p), lerp(4.3, 4.55, p)], [.06, 1.05, 0], 'treadmill-tracking');
+    return view([lerp(2.7, .8, p), lerp(2.15, 2.05, p), lerp(4.3, 4.55, p)], [.06, 1.05, 0], 'treadmill-tracking');
   }
   if (frame.id === 'stairs') {
-    const wide = view([-7.3, 5.7, 12.4], [3.4, 2.7, 0], 'staircase');
-    const side = view(add(position, [-.6, 1.95, 5.15]), add(position, [.12, .1, 0]), 'climb-tracking');
-    const summit = view(add(position, [3.4, 2, 3.9]), add(position, [.03, .15, 0]), 'summit-approach');
+    const wide = view([-7.3, 4.4, 12.4], [3.4, 2.7, 0], 'staircase');
+    const side = view(add(position, [-.6, 1.05, 5.15]), add(position, [.12, .1, 0]), 'climb-tracking');
+    const summit = view(add(position, [3.4, 1.15, 3.9]), add(position, [.03, .15, 0]), 'summit-approach');
     if (t < 6.5) return blend(wide, side, smoother((t - 2.8) / 3.7));
     return blend(side, summit, smoother((t - 12) / 6));
   }
   const p = smoother(t / frame.duration), angle = lerp(Math.atan2(3.9, 3.4), .05, p);
   const distance = lerp(Math.hypot(3.4, 3.9), 5.8, p);
-  return view(add(position, [Math.cos(angle) * distance, lerp(2, 3.8, p), Math.sin(angle) * distance]), add(position, [.03, .15, 0]), 'victory');
+  return view(add(position, [Math.cos(angle) * distance, lerp(1.15, 1.55, p), Math.sin(angle) * distance]), add(position, [.03, .15, 0]), 'victory');
 }
