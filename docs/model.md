@@ -32,7 +32,7 @@ The retained MaleCNS graph has 166,700 neurons and 25,582,938 directed connectio
 
 Video-linked stimulation remains enabled by default: every accepted phone observation supplies 20 mV-equivalent current to the 15 annotated PAM11 cells. Use `--no-video-reward` with its own run directory for a control. The existing manual stimulus API remains available, although the factory UI does not expose a stimulus button or dopamine chart.
 
-The experimental plasticity rule can modify 7,835 existing KC→MBON07/11 connections. The UI shows the real latest whole-network spike count. Measured MN9/DNp09 activity modulates wing flutter, with an independent presentation phase per fly. Swiping, idle movement, and clip selection remain choreographed. All 96 models share the same measurements. These mappings establish neither learned preference nor realistic physiology.
+The experimental plasticity rule can modify 7,835 existing KC→MBON07/11 connections. The UI shows the real latest whole-network spike count. Measured MN9/DNp09 activity modulates wing flutter, with an independent presentation phase per fly. The detailed flies use stronger visual wingbeats: roughly 2.9–3.2 cycles per second and a 4.3–20.3° sweep on each side, depending on the measured motor response. Swiping, idle movement, and clip selection remain choreographed. All 96 models share the same measurements. These mappings establish neither learned preference nor realistic physiology.
 
 ## Controls and persistence
 

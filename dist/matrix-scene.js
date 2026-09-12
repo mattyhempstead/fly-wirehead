@@ -174,7 +174,7 @@ export function createMatrix(canvas, feed) {
         restraints.pose(s, body.matrix);
         for (let i = 0; i < 2; i++) {
           part.position.set(-.18, .41, .23 * (i ? 1 : -1));
-          part.rotation.set((i ? 1 : -1) * Math.sin(time * (10 + s.phase * .2) + s.phase) * (.025 + response.motor * .14), 0, 0);
+          part.rotation.set((i ? 1 : -1) * Math.sin(time * (18 + s.phase * .35) + s.phase) * (.075 + response.motor * .28), 0, 0);
           part.scale.setScalar(1); part.updateMatrix(); matrix.multiplyMatrices(body.matrix, part.matrix); wings[i].setMatrixAt(s.id, matrix);
         }
         const points = frontRightLegPose(feed.frames[s.id]?.gesture ?? 1);

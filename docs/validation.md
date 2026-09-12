@@ -175,3 +175,7 @@ Added the missing continuous green strips along both original room wall tops, ma
 ## Remove wall symbols — 2026-09-12
 
 Removed both falling-symbol wall planes, their canvas texture, and the glyph animation loop. The green wall trim, machinery, lighting, and mist remain. Browser inspection confirmed clear walls and connected neural telemetry with no console errors or warnings. The edited module passed its syntax check and the diff passed whitespace checks.
+
+## Stronger wingbeats — 2026-09-12
+
+Increased the detailed flies' wingbeat speed by about 1.8× and raised their angular amplitude from 0.025–0.165 to 0.075–0.355 radians. All 96 detailed flies retain their individual phases and measured motor modulation. The local close-up was inspected across changing poses with connected telemetry and no console errors or warnings. The edited module passed its syntax check and the diff passed whitespace checks. Neural dynamics, video timing, and the distant rendering tiers are unchanged.
