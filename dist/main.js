@@ -3,6 +3,7 @@ import { MatrixFeed } from './matrix-feed.js';
 import { createPlayback, createFrameClock } from './simulation.js';
 import { BrainClient } from './backend.js';
 import { STATION_COUNT } from './matrix-timeline.js';
+import { BLOCK_COUNT } from './matrix-scale.js';
 import { bindOrbitInput } from './matrix-camera.js';
 
 const $ = selector => document.querySelector(selector), canvas = $('#scene');
@@ -28,9 +29,11 @@ function updateLabels() {
   $('#brain-state').textContent = status?.phase === 'ready' ? (status.paused ? 'SHARED BRAIN PAUSED' : 'SHARED BRAIN CONNECTED') : `SHARED BRAIN ${connection}`;
   $('#brain-status').classList.toggle('connected', status?.phase === 'ready' && !status.paused);
   $('#spike-value').textContent = status?.telemetry ? status.telemetry.total_spikes.toLocaleString() : '—';
-  $('#input-source').textContent = feed.sensorStation === null ? 'Waiting for phone pixels' : `Reading station ${String(feed.sensorStation + 1).padStart(2, '0')} / 64`;
+  $('#input-source').textContent = feed.sensorStation === null ? 'Waiting for phone pixels' : `Reading station ${String(feed.sensorStation + 1).padStart(2, '0')} / ${STATION_COUNT}`;
   $('#pause').textContent = paused ? 'Resume floor' : 'Pause floor'; $('#pause').setAttribute('aria-pressed', String(paused));
-  $('#floor-state').textContent = !feed.ready ? 'LOADING FOOTAGE' : paused ? 'FLOOR PAUSED' : '64 STATIONS ONLINE';
+  const wide = (lab?.cameraState().span ?? 0) > 180;
+  $('#floor-state').textContent = !feed.ready ? 'LOADING FOOTAGE' : paused ? 'FLOOR PAUSED' : wide ? `${BLOCK_COUNT.toLocaleString()} BLOCKS` : `${STATION_COUNT} STATIONS ONLINE`;
+  $('#floor-index').textContent = wide ? '100 × 100' : 'ROOM 01 / 08 × 12';
   $('#engine-message').textContent = feed.error || (connection === 'OFFLINE' ? 'Visual demonstration running. Start the local Python server to connect the shared brain.' : status?.phase === 'loading' ? 'The floor is running while the local connectome loads.' : '');
   if (feed.error) { $('#scene-error').textContent = feed.error; $('#scene-error').hidden = false; }
   updateCameraControls();
@@ -71,7 +74,7 @@ document.addEventListener('keydown', event => {
   if (['Space', 'KeyC', 'KeyF'].includes(event.code)) event.preventDefault();
   if (event.repeat) return;
   if (event.code === 'Space') void togglePause();
-  if (event.code === 'KeyC') setView((view + 1) % 3);
+  if (event.code === 'KeyC') setView((view + 1) % 4);
   if (event.code === 'KeyF') void fullscreen();
 });
 const clock = createFrameClock(); let hudClock = 0;
@@ -100,8 +103,8 @@ if (document.modelContext?.registerTool) {
   try {
     Promise.resolve(document.modelContext.registerTool({
       name: 'control_fly_matrix', title: 'Control the fly matrix demonstration',
-      description: 'Inspect 64 independent feeds and the shared neural measurements, play the single-fly-to-factory reveal, select camera views, and pause or resume the floor.',
-      inputSchema: { type: 'object', properties: { action: { type: 'string', enum: ['status', 'pause', 'resume', 'reveal', 'factory_view', 'row_view', 'station_view', 'save'] } }, required: ['action'], additionalProperties: false },
+      description: 'Inspect 96 independent feeds and shared neural measurements, play the reveal from one fly to 10,000 blocks, select camera views, and pause or resume the floor.',
+      inputSchema: { type: 'object', properties: { action: { type: 'string', enum: ['status', 'pause', 'resume', 'reveal', 'factory_view', 'row_view', 'station_view', 'blocks_view', 'save'] } }, required: ['action'], additionalProperties: false },
       annotations: { readOnlyHint: false, untrustedContentHint: false },
       async execute(input) {
         if (commandPending) throw new Error('A command is already running');
@@ -111,6 +114,7 @@ if (document.modelContext?.registerTool) {
           else if (input.action === 'factory_view') setView(0);
           else if (input.action === 'row_view') setView(1);
           else if (input.action === 'station_view') setView(2);
+          else if (input.action === 'blocks_view') setView(3);
           else if (input.action === 'reveal') await startReveal();
           else if (input.action === 'save') await client.action('save');
           else if (!['status', 'pause', 'resume'].includes(input.action)) throw new TypeError('Unknown action');

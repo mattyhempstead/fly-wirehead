@@ -1,27 +1,28 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { stations, STATION_COUNT, stationClipOrder, stationFrame, bottomUpRGBA } from '../dist/matrix-timeline.js';
+import { stations, ROWS, COLUMNS, PITCH_X, PITCH_Z, STATION_COUNT, stationClipOrder, stationFrame, bottomUpRGBA } from '../dist/matrix-timeline.js';
 import { sampleSwipe, SWIPE_SECONDS } from '../dist/swipe.js';
 import { createPlayback } from '../dist/simulation.js';
 
 const clips = [5.2, 6.9, 4.6, 14.2, 4, 8, 5.1, 24.7, 4.6, 27, 6.4, 16.8].map(duration => ({ duration }));
 
-test('all 64 stations have distinct clocks and occupy a complete 8 by 8 grid', () => {
-  assert.equal(STATION_COUNT, 64);
-  assert.equal(new Set(stations.map(s => `${s.x},${s.z}`)).size, 64);
-  assert.equal(new Set(stations.map(s => s.row)).size, 8);
-  assert.equal(new Set(stations.map(s => s.column)).size, 8);
-  assert.equal(new Set(stations.map(s => s.period)).size, 64);
+test('all 96 stations have distinct clocks and occupy a complete 8 by 12 grid', () => {
+  assert.equal(STATION_COUNT, 96);
+  assert.ok(Math.abs(COLUMNS * PITCH_X / (ROWS * PITCH_Z) - 1) < .02, "room footprint should be square");
+  assert.equal(new Set(stations.map(s => `${s.x},${s.z}`)).size, STATION_COUNT);
+  assert.equal(new Set(stations.map(s => s.row)).size, ROWS);
+  assert.equal(new Set(stations.map(s => s.column)).size, COLUMNS);
+  assert.equal(new Set(stations.map(s => s.period)).size, STATION_COUNT);
   for (let time = 0; time < 90; time += .25) {
     const frames = stations.map(s => stationFrame(s, time, clips));
     assert.ok(new Set(frames.map(f => f.current)).size >= 9);
     const swiping = frames.filter(f => f.gesture < 1);
-    assert.ok(swiping.length >= 5 && swiping.length < 40);
+    assert.ok(swiping.length >= 5 && swiping.length < STATION_COUNT * .65);
     assert.ok(new Set(swiping.map(f => f.gesture)).size > 5);
   }
 });
 
-test('all 64 flies have distinct shuffled loops, even when compared at different starting positions', () => {
+test('all 96 flies have distinct shuffled loops, even when compared at different starting positions', () => {
   const loops = stations.map(station => {
     const order = stationClipOrder(station.id, clips.length);
     assert.deepEqual([...order].sort((a, b) => a - b), clips.map((_, i) => i));
@@ -44,7 +45,7 @@ test('each phone plays every clip once per loop and repeats its own order across
   }
 });
 
-test('small collections still produce complete loops when 64 distinct cycles are impossible', () => {
+test('small collections still produce complete loops when 96 distinct cycles are impossible', () => {
   for (const count of [1, 2, 3, 5]) {
     for (const station of stations) {
       const order = stationClipOrder(station.id, count);

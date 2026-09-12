@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-// Bake a small prototype once, then draw all 64 copies with GPU instancing.
+// Bake a small prototype once, then draw the repeated copies with GPU instancing.
 export function bake(root) {
   root.updateMatrixWorld(true);
   const positions = [], normals = [], colors = [], uvs = [];

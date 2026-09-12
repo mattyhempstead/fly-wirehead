@@ -1,4 +1,4 @@
-"""Cache portrait video frames for 64 independent playheads without 64 decoders.
+"""Cache portrait video frames for 96 independent playheads without 96 decoders.
 
 Run after download_videos.py. Only the existing user-selected footage is used.
 """

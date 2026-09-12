@@ -10,23 +10,23 @@ export function createAtmosphere(scene, stations) {
   const lights = new THREE.Group(), l = builders(lights);
   for (let i = 0; i < 10; i++) {
     const x = -25.2 + i * 5.6;
-    h.box([3.4, 5.9, 1.5], [x, 2.95, -18.8], 0x14221a);
-    h.box([3.0, 5.5, .10], [x, 2.95, -17.99], 0x080f0b);
+    h.box([3.4, 5.9, 1.5], [x, 2.95, -27.8], 0x14221a);
+    h.box([3.0, 5.5, .10], [x, 2.95, -26.99], 0x080f0b);
     for (let slot = 0; slot < 10; slot++) {
       const y = .55 + slot * .48;
-      h.box([2.42, .29, .07], [x, y, -17.91], 0x213629);
-      l.box([.035, .10, .025], [x + .96, y, -17.85], 0xffffff);
-      if (slot % 3 === 0) l.box([.15, .026, .025], [x - .88, y, -17.85], 0xffffff);
+      h.box([2.42, .29, .07], [x, y, -26.91], 0x213629);
+      l.box([.035, .10, .025], [x + .96, y, -26.85], 0xffffff);
+      if (slot % 3 === 0) l.box([.15, .026, .025], [x - .88, y, -26.85], 0xffffff);
     }
     // Uneven cable bundles disappear into the chamber above the processing racks.
     for (let cable = 0; cable < 3; cable++) {
       const dx = (cable - 1) * .34;
-      const points = [[x + dx, 5.8, -18.8], [x + dx, 7.1, -18.8], [x + dx + .35, 8.1 + random(i + cable) * 1.2, -19.5], [x + dx + .6, 9.4, -20.95]];
+      const points = [[x + dx, 5.8, -27.8], [x + dx, 7.1, -27.8], [x + dx + .35, 8.1 + random(i + cable) * 1.2, -28.5], [x + dx + .6, 9.4, -29.95]];
       h.mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points.map(p => new THREE.Vector3(...p))), 18, .052, 5), 0x1f3026);
     }
   }
-  for (let i = 0; i < 6; i++) {
-    const z = -13 + i * 5.1, x = 27.2;
+  for (let i = 0; i < 10; i++) {
+    const z = -24 + i * 5.3, x = 27.2;
     h.mesh(new THREE.CylinderGeometry(.78, 1.02, .38, 12), 0x25382b, [x, .2, z]);
     h.mesh(new THREE.CylinderGeometry(.7, .7, 6.4, 12), 0x102019, [x, 3.6, z]);
     for (const y of [.72, 1.45, 5.85, 6.65]) {
@@ -64,7 +64,7 @@ export function createAtmosphere(scene, stations) {
   const mistMaterial = new THREE.SpriteMaterial({ map: haloTexture, color: 0x74957a, transparent: true, opacity: .16, depthWrite: false, toneMapped: false });
   const mist = Array.from({ length: 15 }, (_, i) => {
     const sprite = new THREE.Sprite(mistMaterial);
-    sprite.position.set(random(i + 700) * 53 - 26.5, .35 + random(i + 750) * .2, random(i + 810) * 34 - 17);
+    sprite.position.set(random(i + 700) * 53 - 26.5, .35 + random(i + 750) * .2, random(i + 810) * 50 - 25);
     sprite.scale.set(9 + random(i + 850) * 8, 1.5 + random(i + 900), 1); scene.add(sprite);
     return { sprite, x: sprite.position.x, z: sprite.position.z, phase: random(i + 925) * 6 };
   });
@@ -74,8 +74,8 @@ export function createAtmosphere(scene, stations) {
   const codeTexture = new THREE.CanvasTexture(codeCanvas); codeTexture.colorSpace = THREE.SRGBColorSpace;
   codeTexture.generateMipmaps = false; codeTexture.minFilter = THREE.LinearFilter;
   const codeMaterial = new THREE.MeshBasicMaterial({ map: codeTexture, transparent: true, opacity: .95, toneMapped: false, depthWrite: false, fog: false });
-  const codeWall = new THREE.Mesh(new THREE.PlaneGeometry(59, 16), codeMaterial); codeWall.position.set(0, 9.5, -21.20); scene.add(codeWall);
-  const codeSide = new THREE.Mesh(new THREE.PlaneGeometry(35, 16), codeMaterial); codeSide.position.set(30.38, 9.5, -2); codeSide.rotation.y = -Math.PI / 2; scene.add(codeSide);
+  const codeWall = new THREE.Mesh(new THREE.PlaneGeometry(59, 16), codeMaterial); codeWall.position.set(0, 9.5, -30.20); scene.add(codeWall);
+  const codeSide = new THREE.Mesh(new THREE.PlaneGeometry(54, 16), codeMaterial); codeSide.position.set(30.38, 9.5, -2); codeSide.rotation.y = -Math.PI / 2; scene.add(codeSide);
   const glyphs = '0123456789アイウエオカキクケコサシスセソタチツテトナニヌネノ+-:<>';
   const streams = Array.from({ length: 80 }, (_, i) => ({ x: i * 13, offset: random(i + 200) * 700, speed: 14 + random(i + 220) * 25, length: 7 + Math.floor(random(i + 240) * 17) }));
   let lastCode = -1;

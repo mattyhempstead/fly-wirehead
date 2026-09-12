@@ -105,3 +105,11 @@ The fly pads now use their own matte Lambert material, with steady emissive fill
 The new Play reveal button is outside the scene, in the existing toolbar. Its 16-second sequence holds on a close station for 1.4 seconds, then pulls back and recenters smoothly on the full 8 × 8 grid. Completion restores the factory preset and changes the button to Replay reveal; restarting begins at the same close-up. Pause holds the reveal clock, and direct camera input cancels the sequence at its displayed pose.
 
 All **45 JavaScript checks** passed. New checks cover the opening hold, continuous widening, exact final framing without drift, pause/resume, deterministic restart, and cancellation through drag, zoom, and presets. The actual browser button produced the close-up and completed at the full grid, with the Replay label, 60 fps, and connected neural telemetry. Neural dynamics and independent video sequences are unchanged.
+
+## Ten-thousand-room reveal — 2026-09-12
+
+The detailed room now contains 96 stations in an 8 × 12 arrangement. Its occupied footprint is 44.8 × 45 scene units, making it approximately square. The 30-second reveal holds on one fly, reaches the room overview at 11 seconds, and continues outward to a 100 × 100 grid of separate blocks. The All blocks preset also opens the complete layout directly.
+
+The distant layout represents 960,000 flies visually. Only the original 96 feeds and one shared brain run independently; additional rooms use an image captured from the actual scene, instanced walls, and simplified nearby fly/phone geometry. Detail is reduced and distant blocks are added as the camera widens. The full 10,000-block browser view used three draw calls and approximately 740,000 triangles at 60 fps. An intermediate reveal sample showed 1,681 blocks at 57 fps. Connected neural telemetry and original feed playback continued; no browser errors or warnings appeared.
+
+All **49 JavaScript checks** passed, including square room dimensions, 96 unique video cycles, exact block coverage and spacing, bounded distance rendering, both reveal stages, deterministic restart, and final Three.js camera projection across portrait and landscape aspect ratios. The numerical model and sensory transport are unchanged.

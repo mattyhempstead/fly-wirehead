@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { OrthographicCamera, Vector3 } from '../dist/vendor/three.module.js';
-import { createOrbitCamera, bindOrbitInput, REVEAL_DURATION } from '../dist/matrix-camera.js';
+import { createOrbitCamera, bindOrbitInput, REVEAL_DURATION, REVEAL_ROOM_TIME } from '../dist/matrix-camera.js';
 
 const views = [
   { theta: -.66, phi: .94, span: 42, target: [0, 1, 0] },
@@ -93,7 +93,7 @@ test('reveal holds on one fly, pulls back continuously, and stops exactly at the
     assert.ok(pose.target[2] <= previous.target[2]);
     previous = pose;
   }
-  assert.ok(widestStep < .006, 'scale must not jump between frames');
+  assert.ok(widestStep < .01, 'scale must not jump between frames');
   assert.deepEqual(controls.snapshot(), { ...views[0], zoom: 1, view: 0, reveal: null });
   const final = controls.snapshot();
   for (let i = 0; i < 60; i++) assert.deepEqual(controls.step(1 / 60), final);

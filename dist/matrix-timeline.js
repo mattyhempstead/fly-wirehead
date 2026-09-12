@@ -1,7 +1,7 @@
 // Independent presentation clocks. These do not generate neural measurements.
 import { SWIPE_SECONDS, sampleSwipe } from './swipe.js';
 
-export const ROWS = 8, COLUMNS = 8, STATION_COUNT = ROWS * COLUMNS;
+export const ROWS = 12, COLUMNS = 8, STATION_COUNT = ROWS * COLUMNS;
 export const PITCH_X = 5.6, PITCH_Z = 3.75;
 export const clamp = (n, low, high) => Math.max(low, Math.min(high, n));
 const mod = (n, size) => ((n % size) + size) % size;

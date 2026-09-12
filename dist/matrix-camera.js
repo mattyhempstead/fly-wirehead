@@ -2,7 +2,8 @@ import { clamp } from './matrix-timeline.js';
 
 const copy = pose => ({ ...pose, target: [...pose.target] });
 const wrap = angle => Math.atan2(Math.sin(angle), Math.cos(angle));
-export const REVEAL_DURATION = 16;
+export const REVEAL_DURATION = 30;
+export const REVEAL_ROOM_TIME = 11;
 const REVEAL_HOLD = 1.4;
 
 export function createOrbitCamera(views) {
@@ -15,17 +16,20 @@ export function createOrbitCamera(views) {
   }
   return {
     snapshot: () => ({ ...copy(pose), view, reveal: reveal ? { elapsed: reveal.elapsed, duration: REVEAL_DURATION } : null }),
-    startReveal(start = views[views.length - 1]) {
-      reveal = { elapsed: 0, from: { ...copy(start), zoom: 1 }, to: { ...copy(views[0]), zoom: 1 } };
+    startReveal(start = views[Math.min(2, views.length - 1)]) {
+      const endView = views.length > 3 ? 3 : 0;
+      reveal = { elapsed: 0, endView, from: { ...copy(start), zoom: 1 }, room: { ...copy(views[0]), zoom: 1 }, to: { ...copy(views[endView]), zoom: 1 } };
       Object.assign(pose, copy(reveal.from));
       destination = copy(pose); view = -1;
     },
     step(dt, paused = false) {
       if (reveal) {
         if (!paused) reveal.elapsed = Math.min(REVEAL_DURATION, reveal.elapsed + clamp(dt, 0, .05));
-        const t = clamp((reveal.elapsed - REVEAL_HOLD) / (REVEAL_DURATION - REVEAL_HOLD), 0, 1);
+        const firstLeg = reveal.elapsed <= REVEAL_ROOM_TIME;
+        const t = firstLeg ? clamp((reveal.elapsed - REVEAL_HOLD) / (REVEAL_ROOM_TIME - REVEAL_HOLD), 0, 1)
+          : clamp((reveal.elapsed - REVEAL_ROOM_TIME) / (REVEAL_DURATION - REVEAL_ROOM_TIME), 0, 1);
         const eased = t * t * t * (t * (t * 6 - 15) + 10);
-        const { from, to } = reveal;
+        const from = firstLeg ? reveal.from : reveal.room, to = firstLeg ? reveal.room : reveal.to;
         // A logarithmic pullback changes scale evenly. Recenter with the visible
         // span so the opening fly stays in frame as its neighbours are revealed.
         pose.span = from.span * Math.pow(to.span / from.span, eased);
@@ -34,13 +38,14 @@ export function createOrbitCamera(views) {
         pose.theta = wrap(from.theta + wrap(to.theta - from.theta) * eased);
         pose.phi = from.phi + (to.phi - from.phi) * eased;
         if (reveal.elapsed === REVEAL_DURATION) {
-          Object.assign(pose, copy(to)); destination = copy(pose); view = 0; reveal = null;
+          Object.assign(pose, copy(to)); destination = copy(pose); view = reveal.endView; reveal = null;
         }
         return this.snapshot();
       }
       const amount = 1 - Math.exp(-clamp(dt, 0, .05) * 8);
       pose.theta = wrap(pose.theta + wrap(destination.theta - pose.theta) * amount);
-      for (const key of ['phi', 'span', 'zoom']) pose[key] += (destination[key] - pose[key]) * amount;
+      pose.span *= Math.pow(destination.span / pose.span, amount);
+      for (const key of ['phi', 'zoom']) pose[key] += (destination[key] - pose[key]) * amount;
       pose.target = pose.target.map((value, i) => value + (destination.target[i] - value) * amount);
       return this.snapshot();
     },
