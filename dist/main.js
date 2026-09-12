@@ -2,12 +2,12 @@ import { createRecoveryLab } from './recovery-scene.js';
 import { createPlayback, createFrameClock } from './simulation.js';
 import { BrainClient } from './backend.js';
 import { dopaminePlot } from './dopamine-plot.js';
-import { recoveryFrame, SCENES, DURATION } from './recovery-timeline.js';
+import { recoveryFrame, SCENES, DURATION, PLAYBACK_RATE, RUN_SECONDS } from './recovery-timeline.js';
 
 const $ = selector => document.querySelector(selector);
 const canvas = $('#scene'), reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const playback = createPlayback(), state = playback.state;
-$('#sequence-duration').textContent = `From the beginning · ${SCENES.length} scenes · ${DURATION} seconds`;
+$('#sequence-duration').textContent = `From the beginning · ${SCENES.length} scenes · ${RUN_SECONDS} seconds · ${PLAYBACK_RATE}×`;
 let lab, status = null, connection = 'CONNECTING', connectionError = '', sceneFailed = false, sceneRendered = false;
 let current = recoveryFrame(0), hudClock = 0, messageTimer, commandPending = false;
 try { lab = createRecoveryLab(canvas); }
@@ -128,7 +128,7 @@ function frame(now) {
   if (!document.hidden) {
     sceneRendered = false;
     try {
-      playback.tick(dt); state.time = Math.min(state.time, DURATION);
+      playback.tick(dt * PLAYBACK_RATE); state.time = Math.min(state.time, DURATION);
       current = lab.render(state.time, dt, state); sceneRendered = true;
       hudClock += dt; if (hudClock > .12) { hudClock = 0; updateLabels(); }
     } catch (error) {
@@ -155,7 +155,7 @@ if (context?.registerTool) {
       else if (input.action === 'previous_scene') setScene(current.index - 1);
       else if (input.action === 'restart') restart();
       else if (input.action !== 'status') await client.action(input.action);
-      return { connection, paused: state.paused, scene: current.id, shot: current.shot, seconds: state.time, stimulationAttached: status?.stimulation_attached ?? null, telemetry: status?.telemetry ?? null };
+      return { connection, paused: state.paused, scene: current.id, shot: current.shot, seconds: state.time / PLAYBACK_RATE, playbackRate: PLAYBACK_RATE, stimulationAttached: status?.stimulation_attached ?? null, telemetry: status?.telemetry ?? null };
     }
   }, { signal: lifecycle.signal })).catch(console.warn); } catch (error) { console.warn(error); }
   window.addEventListener('pagehide', () => lifecycle.abort(), { once: true });

@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { solveLeg, terrainFoot, ease, lerp, FLY_SCALE } from './recovery-timeline.js';
+import { solveLeg, terrainFoot, bipedFoot, ease, lerp, FLY_SCALE } from './recovery-timeline.js';
 const C = { lime: 0xc4f86a };
 const seed = n => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
 const vec = p => new THREE.Vector3(...p);
@@ -92,8 +92,9 @@ export function createRecoveryFly() {
     root, fly, head, limbs,
     socket(target = new THREE.Vector3()) { return head.localToWorld(target.set(0, .47, 0)); },
     eyes(target = new THREE.Vector3()) { return head.localToWorld(target.set(.49, .16, 0)); },
-    pose({ time, gait = 0, phase = 0, terrainTravel = 0, settle = 0, stride = .18, rail = false, stumble = 0, victory = 0, motor = 0, turn = 0, groundAt = null }) {
+    pose({ time, gait = 0, phase = 0, terrainTravel = 0, settle = 0, stride = .18, rail = false, stumble = 0, victory = 0, motor = 0, turn = 0, groundAt = null, groundY = .04, biped = false }) {
       root.updateMatrixWorld(true);
+      const inverseRotation = root.quaternion.clone().invert();
       const elapsed = lastPoseTime === null ? 0 : Math.max(0, Math.min(.05, time - lastPoseTime));
       wingPhase = (wingPhase + elapsed * (19 + motor * 15)) % (Math.PI * 2);
       lastPoseTime = time;
@@ -122,8 +123,35 @@ export function createRecoveryFly() {
           const raised = [.5, .95, side * .92];
           ankle = ankle.map((v, i) => v + (raised[i] - v) * victory);
         }
+        if (biped) {
+          // Only the hind pair bears weight. The middle pair folds at the waist;
+          // the wrapped front pair grips the rails, pumps, or rises in victory.
+          const armPhase = phase + (side === 1 ? Math.PI : 0);
+          if (index === 2) {
+            const foot = gait > 0 ? bipedFoot(phase, side, rail ? .08 : .14) : [-.06, 0, side * .26];
+            tmp.set(root.position.x + foot[0], groundY + foot[1], foot[2]);
+            if (groundAt) {
+              const [x, y] = terrainFoot(terrainTravel, side === 1 ? .5 : 0, -1.16, groundAt);
+              const standingX = root.position.x - .06;
+              tmp.x = lerp(x, standingX, settle);
+              tmp.y = lerp(y, groundAt(standingX), settle) + .04;
+            }
+          } else if (index === 1) {
+            tmp.set(root.position.x - .12, root.position.y - .08, side * .30);
+          } else {
+            tmp.set(root.position.x + .20 + Math.cos(armPhase) * .06, root.position.y + .04 + Math.sin(armPhase) * .05, side * .36);
+            if (rail) tmp.set(root.position.x + .25 + Math.cos(armPhase) * .035, .80 - (side === 1 ? stumble * .23 : 0), side * .52);
+            if (victory > 0) tmp.lerp(new THREE.Vector3(root.position.x + .10, root.position.y + .62, side * .40), victory);
+          }
+          ankle = fly.worldToLocal(tmp).toArray();
+        }
         const pose = solveLeg(rest, ankle);
-        if (index === 0 && victory > 0) {
+        if (biped) {
+          const toeLength = Math.hypot(...rest[3].map((n, i) => n - rest[2][i]));
+          const direction = new THREE.Vector3(...(index === 2 ? [1, 0, 0] : [.3, .8, side * .1]));
+          direction.applyQuaternion(inverseRotation).normalize().multiplyScalar(toeLength);
+          pose[3] = pose[2].map((n, i) => n + direction.getComponent(i));
+        } else if (index === 0 && victory > 0) {
           const original = rest[3].map((n, i) => n - rest[2][i]);
           const raisedToe = [.06, .23, side * .08];
           const toe = original.map((n, i) => n + (raisedToe[i] - n) * victory);
@@ -134,8 +162,11 @@ export function createRecoveryFly() {
         poseBone(limb.lower, pose[1], pose[2]); poseBone(limb.foot, pose[2], pose[3]);
       }
       head.rotation.y = turn * .13 + Math.sin(time * .9) * .022;
-      head.rotation.z = -stumble * .2 + Math.sin(time * 1.8) * .015;
-      wings.forEach((wing, i) => { wing.rotation.x = (i ? 1 : -1) * (Math.sin(wingPhase) * (.012 + motor * .13) + victory * .1); });
+      head.rotation.z = (biped ? -root.rotation.z * .7 : 0) - stumble * .12 + Math.sin(time * 1.8) * .015;
+      wings.forEach((wing, i) => {
+        wing.rotation.x = (i ? 1 : -1) * (Math.sin(wingPhase) * (.012 + motor * .13) + victory * .1);
+        wing.rotation.z = biped ? -.34 : 0;
+      });
       // Subtle facet movement suggests blinking without replacing compound eyes.
       const blink = Math.pow(Math.max(0, Math.cos(time * 1.3)), 45);
       eyes.forEach(eye => { eye.scale.y = .37 * (1 - blink * .09); });

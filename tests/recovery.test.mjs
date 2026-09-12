@@ -2,8 +2,21 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { recoveryFrame, DURATION, SCENES, UNPLUG_AT, solveLeg, stairHeight, STEPS } from '../dist/recovery-timeline.js';
 import { BrainClient } from '../dist/backend.js';
-import { walkingMotion, treadmillMotion, terrainFoot } from '../dist/recovery-timeline.js';
+import { walkingMotion, treadmillMotion, terrainFoot, bipedFoot, PLAYBACK_RATE, RUN_SECONDS } from '../dist/recovery-timeline.js';
 import { recoveryCamera } from '../dist/recovery-camera.js';
+import { createPlayback } from '../dist/simulation.js';
+
+test('1.5x presentation reaches the end in twelve seconds and leaves measured values intact', () => {
+  const player = createPlayback();
+  player.state.pam11Hz = 7.25; player.state.motorHz = 12;
+  player.setPaused(false);
+  for (let i = 0; i < RUN_SECONDS * 60; i++) player.tick(PLAYBACK_RATE / 60);
+  assert.ok(Math.abs(player.state.time - DURATION) < 1e-9);
+  assert.equal(player.state.pam11Hz, 7.25); assert.equal(player.state.motorHz, 12);
+  const before = player.state.time;
+  player.setPaused(true); player.tick(PLAYBACK_RATE / 60);
+  assert.equal(player.state.time, before);
+});
 
 test('changing cadence advances phase continuously at the intended rate', () => {
   const dt = .00001;
@@ -52,17 +65,19 @@ test('camera moves are continuous between intentional edits and the summit flows
     }
   }
   const position = [12.37, 6.6058, 0];
-  const before = recoveryCamera({ ...SCENES[3], local: 10, motionTime: 18 }, position);
+  const before = recoveryCamera({ ...SCENES[3], local: 5, motionTime: 18 }, position);
   const after = recoveryCamera({ ...SCENES[4], local: 0 }, position);
   assert.deepEqual(before.target, after.target);
   assert.ok(Math.hypot(...before.position.map((n, i) => n - after.position[i])) < 1e-10);
 });
-test('the shorter sequence trims travel with two edits instead of accelerating the climb', () => {
-  assert.equal(DURATION, 33);
+test('the twelve-second montage keeps all five scenes and two climbing edits', () => {
+  assert.equal(DURATION, 18);
+  assert.equal(PLAYBACK_RATE, 1.5);
+  assert.equal(RUN_SECONDS, 12);
   assert.equal(SCENES.reduce((sum, scene) => sum + scene.duration, 0), DURATION);
-  assert.ok(SCENES.every(scene => scene.duration <= 10));
+  assert.ok(SCENES.every(scene => scene.duration <= 5));
   let previous, cuts = 0;
-  for (let local = 0; local < 10; local += .01) {
+  for (let local = 0; local < SCENES[3].duration; local += .01) {
     const frame = recoveryFrame(SCENES[3].start + local);
     if (previous) {
       if (frame.edit !== previous.edit) { cuts++; assert.ok(frame.motionTime - previous.motionTime > 3); }
@@ -72,6 +87,22 @@ test('the shorter sequence trims travel with two edits instead of accelerating t
   }
   assert.equal(cuts, 2);
   assert.ok(previous.motionTime > 17.98 && previous.motionTime <= 18);
+});
+test('the upright gait alternates hind feet with no airborne gap or foot-position jumps', () => {
+  let previous;
+  let leftSteps = false, rightSteps = false;
+  for (let phase = 0; phase < 4 * Math.PI; phase += .005) {
+    const left = bipedFoot(phase, -1), right = bipedFoot(phase, 1);
+    assert.ok([...left, ...right].every(Number.isFinite));
+    assert.ok(Math.min(left[1], right[1]) < 1e-10);
+    assert.ok(left[2] < 0 && right[2] > 0);
+    leftSteps ||= left[1] > .08; rightSteps ||= right[1] > .08;
+    if (previous) for (const [foot, old] of [[left, previous[0]], [right, previous[1]]]) {
+      assert.ok(Math.hypot(...foot.map((n, i) => n - old[i])) < .002);
+    }
+    previous = [left, right];
+  }
+  assert.ok(leftSteps && rightSteps);
 });
 
 test('the five scenes cut in order, unplug once, and hold the final victory', () => {
@@ -86,10 +117,10 @@ test('the five scenes cut in order, unplug once, and hold the final victory', ()
 });
 test('the stumble develops, holds, and resolves within the walking scene', () => {
   const start = SCENES[1].start;
-  assert.equal(recoveryFrame(start + 1).stumble, 0);
-  assert.ok(recoveryFrame(start + 2.9).stumble > .95);
-  assert.ok(recoveryFrame(start + 3.8).stumble > 0);
-  assert.equal(recoveryFrame(start + 5).stumble, 0);
+  assert.equal(recoveryFrame(start + .5).stumble, 0);
+  assert.ok(recoveryFrame(start + 1.5).stumble > .95);
+  assert.ok(recoveryFrame(start + 2.2).stumble > 0);
+  assert.equal(recoveryFrame(start + 3.5).stumble, 0);
   assert.equal(recoveryFrame(45).stumble, 0);
 });
 test('leg poses retain all segment lengths even at unreachable rail and victory targets', () => {

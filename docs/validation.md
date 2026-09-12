@@ -88,3 +88,11 @@ Walking and treadmill cadence now use integrated speed ramps, wing phase accumul
 The sequence now runs for **33 seconds** with all five scenes retained. The opening remains a front face close-up; walking retains the stumble, and victory still raises both front legs. The climb uses three excerpts of the original 18-second motion, with two 320 ms dissolves; its source motion clock advances at one second per second between those edits. Treadmill footage uses the later part of the original cadence ramp.
 
 All **36 JavaScript checks** passed. The added check verifies the 33-second duration, exactly two climbing edits, and unchanged climbing speed within each excerpt. Camera continuity checks exclude only those explicit edits and retain the continuous climb-to-victory boundary. The replay duration label derives from the same scene timeline.
+
+## Upright gait and faster playback — 2026-09-12
+
+The choreography is now 18 seconds played at **1.5×**, completing in **12 seconds**. All five scenes remain, with a two-second front close-up, the rail stumble, treadmill, three stair excerpts, and victory. The opening cable lifts after 0.8 timeline seconds. Dissolves last 200 ms.
+
+The fly stands and steps on its hind pair. Its middle pair folds at the waist, and the front pair grips the rails, pumps during running, and raises in victory. The head counter-rotates toward the direction of travel and the wings tilt clear of the floor; the existing joint wrap follows the right arm. Browser inspection checked the upright rail and treadmill poses, both raised arms in victory, and the updated duration label. The full replay reached victory at 12 seconds with 1.5× playback, live measured neural activity, and no console errors or warnings.
+
+All **38 JavaScript checks** passed. New checks cover alternating foot support without an airborne gap, foot-target continuity, 12-second playback at 1.5×, pause, and preservation of measured rates. Backend neural integration and telemetry were unchanged.

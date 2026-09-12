@@ -15,11 +15,11 @@ export function recoveryCamera(frame, position) {
   }
   if (frame.id === 'walking') {
     const p = smoother(t / frame.duration);
-    return view(add(position, [lerp(2.9, 1.4, p), lerp(2.8, 3.1, p), lerp(2.75, 3.65, p)]), add(position, [.06, .12, 0]), 'rails-tracking');
+    return view(add(position, [lerp(2.7, 1.45, p), lerp(1.5, 1.65, p), lerp(3.2, 3.65, p)]), add(position, [.06, .12, 0]), 'rails-tracking');
   }
   if (frame.id === 'treadmill') {
     const p = smoother(t / frame.duration);
-    return view([lerp(2.4, .35, p), lerp(3.65, 3.4, p), lerp(3.85, 4.2, p)], [.06, .77, 0], 'treadmill-tracking');
+    return view([lerp(2.7, .8, p), lerp(3.1, 2.65, p), lerp(4.3, 4.55, p)], [.06, 1.05, 0], 'treadmill-tracking');
   }
   if (frame.id === 'stairs') {
     const wide = view([-7.3, 5.7, 12.4], [3.4, 2.7, 0], 'staircase');

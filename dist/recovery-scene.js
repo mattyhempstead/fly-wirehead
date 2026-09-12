@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { createRecoveryFly } from './fly-model.js';
 import { createRecoveryWorld } from './recovery-world.js';
 import { createMotionResponse } from './motion.js';
-import { recoveryFrame, FLY_SCALE, STEPS, ease, lerp, clamp } from './recovery-timeline.js';
+import { recoveryFrame, FLY_SCALE, STEPS, UNPLUG_AT, ease, lerp, clamp } from './recovery-timeline.js';
 import { stairHeight, walkingMotion, treadmillMotion, smoother } from './recovery-timeline.js';
 import { recoveryCamera } from './recovery-camera.js';
 
@@ -66,37 +66,41 @@ export function createRecoveryLab(canvas) {
     world.setScene(frame.id);
     const neural = response.step(state, state.paused ? 0 : dt), local = frame.local, motionTime = frame.motionTime;
     const fly = specimen.root, summitX = STEPS.count * STEPS.tread, summitY = STEPS.count * STEPS.rise;
-    let gait = 0, phase = 0, stride = .2, rail = false, victory = 0, groundAt = null, terrainTravel = 0, settle = 0;
+    let gait = 0, phase = 0, stride = .2, rail = false, victory = 0, groundAt = null, terrainTravel = 0, settle = 0, groundY = .04;
+    const biped = frame.id !== 'unplugged';
     fly.rotation.set(0, 0, 0); fly.position.set(0, .837 + .96 * FLY_SCALE, 0);
     if (frame.id === 'unplugged') {
-      fly.rotation.z = -.03 * ease((local - 2.6) / 2);
+      fly.rotation.z = -.03 * ease((local - UNPLUG_AT) / 1.15);
     } else if (frame.id === 'walking') {
       const walk = walkingMotion(local);
-      fly.position.set(-1.03 + walk.distance, .96 * FLY_SCALE + .03 - frame.stumble * .11, 0);
-      fly.rotation.x = frame.stumble * .19; fly.rotation.z = -frame.stumble * .17;
+      fly.position.set(-1.03 + walk.distance, .84 - frame.stumble * .12 + Math.sin(walk.phase * 2) * .012, 0);
+      fly.rotation.x = Math.sin(walk.phase) * .025 + frame.stumble * .13;
+      fly.rotation.z = 1.06 - frame.stumble * .29;
       gait = walk.cadence; phase = walk.phase; stride = .18; rail = true;
     } else if (frame.id === 'treadmill') {
       phase = treadmillMotion(motionTime).phase;
-      fly.position.set(-.1 + Math.sin(local * 1.3) * .012, .257 + .96 * FLY_SCALE, 0);
+      groundY = .257;
+      fly.position.set(-.1 + Math.sin(local * 1.3) * .012, groundY + .80 + Math.sin(phase * 2) * .014, 0);
       gait = lerp(5, 15, ease(motionTime / 10)); stride = lerp(.13, .27, ease(motionTime / 10));
-      fly.rotation.z = .025 + Math.sin(phase * 2) * .006;
+      fly.rotation.z = 1 + Math.sin(phase * 2) * .012;
     } else if (frame.id === 'stairs') {
       const travel = ease(motionTime / 18), x = lerp(-1.1, summitX + .85, travel);
       const slope = STEPS.rise / STEPS.tread;
-      fly.position.set(x, clamp(x + .18, 0, summitX) * slope + .96 * FLY_SCALE + .025, 0);
-      fly.rotation.z = Math.atan(slope) * ease((x + .6) / .6) * (1 - ease((x - summitX + .25) / 1));
+      fly.position.set(x, clamp(x + .18, 0, summitX) * slope + .84, 0);
+      fly.rotation.z = 1 + .06 * smoother((motionTime - 16.3) / 1.7);
       gait = 12; terrainTravel = x + 1.1; phase = terrainTravel / (STEPS.tread * 2) * Math.PI * 2;
       stride = .23; groundAt = stairHeight; settle = smoother((motionTime - 16.3) / 1.7);
     } else {
-      fly.position.set(summitX + .85, summitY + .96 * FLY_SCALE + .025, 0);
-      victory = ease((local - .3) / 1.6);
-      fly.rotation.z = -.035 * victory;
+      groundY = summitY + .04;
+      fly.position.set(summitX + .85, summitY + .84, 0);
+      victory = ease((local - .1) / .9);
+      fly.rotation.z = 1.06;
     }
     // Frame the stable root position, not each small motor-driven body movement.
     const planned = recoveryCamera(frame, fly.position.toArray()), shot = planned.shot;
     cameraAt.set(...planned.position); target.set(...planned.target);
     fly.position.y += (Math.sin(time * 2) * .005 + neural.motor * Math.sin(time * 8) * .008) * (1 - frame.stumble);
-    specimen.pose({ time: reduced ? 0 : time, gait: reduced ? 0 : gait, phase: reduced ? 0 : phase, terrainTravel, settle, stride, rail, stumble: frame.stumble, victory, motor: neural.motor, turn: neural.turn, groundAt });
+    specimen.pose({ time: reduced ? 0 : time, gait: reduced ? 0 : gait, phase: reduced ? 0 : phase, terrainTravel, settle, stride, rail, stumble: frame.stumble, victory, motor: neural.motor, turn: neural.turn, groundAt, groundY, biped });
     world.animate(frame, specimen.socket());
     const outside = frame.id === 'stairs' || frame.id === 'victory';
     scene.background.set(outside ? 0xecdcb9 : 0xd9e4d8); scene.fog.color.copy(scene.background);
@@ -116,9 +120,9 @@ export function createRecoveryLab(canvas) {
     smoothCamera.lerp(cameraAt, damping); smoothTarget.lerp(target, damping);
     camera.position.copy(smoothCamera); camera.lookAt(smoothTarget);
     renderer.setRenderTarget(null); renderer.render(scene, camera);
-    if (dissolveTime < .32) {
+    if (dissolveTime < .20) {
       dissolveTime += Math.max(0, Math.min(dt, .05));
-      dissolveMaterial.opacity = 1 - smoother(dissolveTime / .32);
+      dissolveMaterial.opacity = 1 - smoother(dissolveTime / .20);
       renderer.autoClear = false;
       try { renderer.render(dissolveScene, dissolveCamera); } finally { renderer.autoClear = true; }
     }

@@ -4,19 +4,19 @@
 
 The `recovery` branch of [Fly / Wirehead](https://github.com/mattyhempstead/fly-wirehead/tree/main): the same faceted fly and real local connectome, now in a five-scene rehabilitation sequence. **166,700 neurons. 25.6 million connections. Live visual input and measured dopamine-neuron activity.**
 
-A small white wrap stays around the front right leg's joint—the leg that used to swipe. The world uses metre-scale rehabilitation equipment and a real, 36-step outdoor staircase. The digital specimen is enlarged so its limbs and movements remain visible.
+A small white wrap stays around the front right leg's joint—the leg that used to swipe. The fly walks upright on its hind pair, tucks its middle legs, and uses its front pair as arms. The world uses metre-scale rehabilitation equipment and a real, 36-step outdoor staircase. The digital specimen is enlarged so its limbs and movements remain visible.
 
 ## The sequence
 
 | Time | Scene |
 | --- | --- |
-| 0–6 s | **Unplugged.** A front close-up of the compound eyes as the cable lifts free, with a gentle pullback. |
-| 6–14 s | **Learning to walk.** Parallel rails, hesitant steps, a buckling front leg and a near-fall, then another attempt. |
-| 14–19 s | **Treadmill.** A camera arc around a regular treadmill as the fly finds a running rhythm. |
-| 19–29 s | **The climb.** The full staircase, a cut to the middle of the climb, then another to the final approach. |
-| 29–33 s | **Victory.** Raising both front legs and a camera arc above the upper landing. |
+| 0–2 s | **Unplugged.** A front close-up of the compound eyes as the cable lifts free, with a gentle pullback. |
+| 2–5.3 s | **Learning to walk.** Upright steps between parallel rails, a slip of the bandaged arm and a near-fall, then another attempt. |
+| 5.3–7.3 s | **Treadmill.** Running on two legs, with the front pair pumping like arms. |
+| 7.3–10.7 s | **The climb.** The full staircase, a cut to the middle of the climb, then another to the final approach. |
+| 10.7–12 s | **Victory.** Standing on two legs and raising both arms above the upper landing. |
 
-The complete sequence lasts **33 seconds**, then holds the final pose. Shorter holds and two edits through the climb condense the action while keeping the original climbing speed. Wider framing, smooth tracking, and brief dissolves connect the scenes; the final approach flows directly into victory. Only the live neural activity panel sits over the scene. The sequence is a 3D simulation with choreographed rehabilitation and measured motor modulation, not a video or a claim that the network learned to walk.
+The complete sequence lasts **12 seconds**, then holds the final pose. Shorter holds, two edits through the climb, and **1.5× animation speed** condense the action. Wider framing, smooth tracking, and brief dissolves connect the scenes; the final approach flows directly into victory. Only the live neural activity panel sits over the scene. Neural integration and measured firing rates retain their own clock. The sequence is a 3D simulation with choreographed rehabilitation and measured motor modulation, not a video or a claim that the network learned to walk.
 
 ## Run locally
 

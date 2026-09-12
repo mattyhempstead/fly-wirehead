@@ -1,13 +1,15 @@
 // Presentation choreography only. No neural values are generated here.
 export const SCENES = [
-  { id: 'unplugged', title: 'Unplugged', start: 0, duration: 6 },
-  { id: 'walking', title: 'Learning to walk', start: 6, duration: 8 },
-  { id: 'treadmill', title: 'Finding a rhythm', start: 14, duration: 5 },
-  { id: 'stairs', title: 'The climb', start: 19, duration: 10 },
-  { id: 'victory', title: 'Back on six feet', start: 29, duration: 4 },
+  { id: 'unplugged', title: 'Unplugged', start: 0, duration: 3 },
+  { id: 'walking', title: 'Learning to walk', start: 3, duration: 5 },
+  { id: 'treadmill', title: 'Finding a rhythm', start: 8, duration: 3 },
+  { id: 'stairs', title: 'The climb', start: 11, duration: 5 },
+  { id: 'victory', title: 'Back on its feet', start: 16, duration: 2 },
 ];
 export const DURATION = SCENES.at(-1).start + SCENES.at(-1).duration;
-export const UNPLUG_AT = 2.6;
+export const PLAYBACK_RATE = 1.5;
+export const RUN_SECONDS = DURATION / PLAYBACK_RATE;
+export const UNPLUG_AT = .8;
 export const FLY_SCALE = .48;
 export const STEPS = { count: 36, rise: .17, tread: .32, width: 6 };
 export const clamp = (n, low = 0, high = 1) => Math.max(low, Math.min(high, n));
@@ -21,13 +23,20 @@ export function rampDistance(time, start, duration) {
 }
 export function walkingMotion(time) {
   return {
-    distance: .13 * time - .13 * rampDistance(time, 1.4, .8) + .19 * rampDistance(time, 4.1, .9),
-    phase: 4.2 * time - 2.8 * rampDistance(time, 1.6, .65) + 4.1 * rampDistance(time, 4.1, 1.1),
-    cadence: 4.2 - 2.8 * ease((time - 1.6) / .65) + 4.1 * ease((time - 4.1) / 1.1),
+    distance: .13 * time - .13 * rampDistance(time, .6, .5) + .19 * rampDistance(time, 2.6, .7),
+    phase: 4.2 * time - 2.8 * rampDistance(time, .75, .45) + 4.1 * rampDistance(time, 2.6, .7),
+    cadence: 4.2 - 2.8 * ease((time - .75) / .45) + 4.1 * ease((time - 2.6) / .7),
   };
 }
 export function treadmillMotion(time) {
   return { phase: 5 * time + 10 * rampDistance(time, 0, 10), belt: .4 * time + .8 * rampDistance(time, 0, 10) };
+}
+// An alternating two-foot gait, with a brief double-support interval each step.
+export function bipedFoot(phase, side, stride = .08) {
+  const cycle = ((phase / (Math.PI * 2) + (side === 1 ? .5 : 0)) % 1 + 1) % 1;
+  const swing = clamp(cycle / .42);
+  const x = cycle < .42 ? lerp(-stride, stride, ease(swing)) : lerp(stride, -stride, (cycle - .42) / .58);
+  return [x - .06, Math.sin(Math.PI * swing) ** 2 * .09, side * .26];
 }
 // Each stance keeps a foot planted. Only the airborne part crosses a stair edge.
 export function terrainFoot(travel, offset, origin, groundAt, stepLength = STEPS.tread * 2) {
@@ -40,13 +49,13 @@ export function recoveryFrame(time) {
   const t = clamp(Number.isFinite(time) ? time : 0, 0, DURATION);
   const index = Math.max(0, SCENES.findLastIndex(scene => t >= scene.start));
   const scene = SCENES[index], local = t - scene.start;
-  const stumble = scene.id === 'walking' ? ease((local - 1.9) / .55) * (1 - ease((local - 3.2) / 1.25)) : 0;
+  const stumble = scene.id === 'walking' ? ease((local - .9) / .4) * (1 - ease((local - 1.7) / 1.1)) : 0;
   // Edit out the middle of the journey, rather than speeding up the same climb.
-  let motionTime = scene.id === 'treadmill' ? local + 5 : local, edit = scene.id;
+  let motionTime = scene.id === 'treadmill' ? local + 7 : local, edit = scene.id;
   if (scene.id === 'stairs') {
-    if (local < 2.4) { motionTime = local + .8; edit = 'stairs-base'; }
-    else if (local < 6.3) { motionTime = local - 2.4 + 6.5; edit = 'stairs-middle'; }
-    else { motionTime = local - 6.3 + 14.3; edit = 'stairs-summit'; }
+    if (local < .9) { motionTime = local + 2.1; edit = 'stairs-base'; }
+    else if (local < 2.6) { motionTime = local - .9 + 8; edit = 'stairs-middle'; }
+    else { motionTime = local - 2.6 + 15.6; edit = 'stairs-summit'; }
   }
   return { ...scene, index, time: t, local, motionTime, edit, progress: local / scene.duration, attached: t < UNPLUG_AT, stumble, ended: t === DURATION };
 }

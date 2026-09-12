@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { STEPS, smoother, treadmillMotion } from './recovery-timeline.js';
+import { STEPS, UNPLUG_AT, smoother, treadmillMotion } from './recovery-timeline.js';
 
 // Metre-scale architecture and conventional human rehabilitation equipment.
 export function createRecoveryWorld(scene) {
@@ -109,7 +109,7 @@ export function createRecoveryWorld(scene) {
     setScene(id) { for (const group of new Set(Object.values(groups))) group.visible = group === groups[id]; },
     animate(frame, socket) {
       if (frame.id === 'unplugged') {
-        const lift = smoother((frame.local - 2.6) / 1.6);
+        const lift = smoother((frame.local - UNPLUG_AT) / 1.15);
         plug.position.copy(socket).add(new THREE.Vector3(-lift * .18, .06 + lift * .55, -lift * .12));
         plug.rotation.z = lift * .2;
         const end = plug.position.clone().add(new THREE.Vector3(0, .105, 0));
