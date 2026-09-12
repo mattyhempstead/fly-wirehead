@@ -13,10 +13,10 @@ From the walking scene onward, a small white wrap stays around the front right l
 | 0–2 s | **Unplugged.** A front close-up of the compound eyes as the cable lifts free, with a gentle pullback. |
 | 2–5.3 s | **Learning to walk.** Upright steps between parallel rails, a slip of the bandaged arm and a near-fall, then another attempt. |
 | 5.3–7.3 s | **Treadmill.** Running on two legs, with the front pair pumping like arms. |
-| 7.3–10.7 s | **The climb.** The full staircase, a cut to the middle of the climb, then another to the final approach. |
+| 7.3–10.7 s | **The climb.** One uninterrupted run up the final stretch of the staircase, with a smooth camera pan alongside the fly. |
 | 10.7–12 s | **Victory.** Standing on two legs and raising both arms above the upper landing. |
 
-The complete sequence lasts **12 seconds**, then holds the final pose. Shorter holds, two edits through the climb, and **1.5× animation speed** condense the action. Wider framing, smooth tracking, and brief dissolves connect the scenes; the final approach flows directly into victory. Only the live neural activity panel sits over the scene. Neural integration and measured firing rates retain their own clock. The sequence is a 3D simulation with choreographed rehabilitation and measured motor modulation, not a video or a claim that the network learned to walk.
+The complete sequence lasts **12 seconds**, then holds the final pose. Shorter holds and **1.5× animation speed** condense the action. Wider framing, smooth tracking, and brief dissolves connect the scenes; the climb has no internal cuts and flows directly into victory. Only the live neural activity panel sits over the scene. Neural integration and measured firing rates retain their own clock. The sequence is a 3D simulation with choreographed rehabilitation and measured motor modulation, not a video or a claim that the network learned to walk.
 
 ## Run locally
 

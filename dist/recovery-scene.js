@@ -51,8 +51,7 @@ export function createRecoveryLab(canvas) {
     resize(); frame = recoveryFrame(time);
     const changedRoom = lastFrame && frame.id !== lastFrame.id && !(lastFrame.id === 'stairs' && frame.id === 'victory');
     const seek = lastFrame && (time < lastFrame.time || time - lastFrame.time > .25);
-    const changedEdit = lastFrame && frame.id === lastFrame.id && frame.edit !== lastFrame.edit;
-    if (changedRoom || changedEdit || seek) {
+    if (changedRoom || seek) {
       // Retain the outgoing observer image before moving the specimen or switching rooms.
       // The eye-camera path below renders the world directly and cannot see this dissolve.
       if (!reduced) {

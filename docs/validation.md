@@ -110,3 +110,7 @@ The rigid cuff is replaced by two tapered gauze sleeves joined over a rounded el
 ## Lower observer cameras and delayed bandage — 2026-09-12
 
 Observer cameras now sit closer to eye level with a gentle downward angle; the final victory orbit stays low. The bandage is hidden throughout the opening and appears from walking onward, with visibility reset on replay. Browser inspection checked the opening, rails, treadmill, staircase, and final victory framing. A full replay reached victory at 12 seconds with connected neural telemetry and no browser errors or warnings. All **40 JavaScript checks** passed, including camera continuity. The eye camera, choreography, and neural dynamics are unchanged.
+
+## Continuous stair pan — 2026-09-12
+
+The climb now shows one continuous five-second choreography excerpt ending at the summit, followed by victory. Internal travel jumps and stair dissolves are removed. A low camera pan tracks the fly from behind its side toward the front, matching the victory camera at the boundary. The montage remains 12 seconds at 1.5× speed. All **40 JavaScript checks** passed; the updated checks require uninterrupted stair motion, a single climbing shot, and continuous camera paths without exemptions for cuts. Browser inspection checked the stair framing and running pose. Neural dynamics and measured telemetry are unchanged.

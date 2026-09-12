@@ -50,14 +50,9 @@ export function recoveryFrame(time) {
   const index = Math.max(0, SCENES.findLastIndex(scene => t >= scene.start));
   const scene = SCENES[index], local = t - scene.start;
   const stumble = scene.id === 'walking' ? ease((local - .9) / .4) * (1 - ease((local - 1.7) / 1.1)) : 0;
-  // Edit out the middle of the journey, rather than speeding up the same climb.
-  let motionTime = scene.id === 'treadmill' ? local + 7 : local, edit = scene.id;
-  if (scene.id === 'stairs') {
-    if (local < .9) { motionTime = local + 2.1; edit = 'stairs-base'; }
-    else if (local < 2.6) { motionTime = local - .9 + 8; edit = 'stairs-middle'; }
-    else { motionTime = local - 2.6 + 15.6; edit = 'stairs-summit'; }
-  }
-  return { ...scene, index, time: t, local, motionTime, edit, progress: local / scene.duration, attached: t < UNPLUG_AT, stumble, ended: t === DURATION };
+  // Show one uninterrupted final climb at the existing pace, with no travel jumps.
+  const motionTime = scene.id === 'treadmill' ? local + 7 : scene.id === 'stairs' ? local + 13 : local;
+  return { ...scene, index, time: t, local, motionTime, progress: local / scene.duration, attached: t < UNPLUG_AT, stumble, ended: t === DURATION };
 }
 export function stairHeight(x) {
   if (x < 0) return 0;

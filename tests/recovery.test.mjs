@@ -50,14 +50,14 @@ test('terrain footfalls cross stair edges in the air and stay planted during sta
     }
   }
 });
-test('camera moves are continuous between intentional edits and the summit flows into victory', () => {
+test('camera moves are continuous throughout each scene and the summit flows into victory', () => {
   for (const scene of SCENES) {
     let previous;
     for (let local = 0; local < scene.duration; local += .01) {
       const frame = recoveryFrame(scene.start + local);
-      const current = { ...recoveryCamera(frame, [local * .1, .7, 0]), edit: frame.edit };
+      const current = recoveryCamera(frame, [local * .1, .7, 0]);
       assert.ok([...current.position, ...current.target].every(Number.isFinite));
-      if (previous && previous.edit === current.edit) {
+      if (previous) {
         assert.ok(Math.hypot(...current.position.map((n, i) => n - previous.position[i])) < .12);
         assert.ok(Math.hypot(...current.target.map((n, i) => n - previous.target[i])) < .05);
       }
@@ -70,22 +70,22 @@ test('camera moves are continuous between intentional edits and the summit flows
   assert.deepEqual(before.target, after.target);
   assert.ok(Math.hypot(...before.position.map((n, i) => n - after.position[i])) < 1e-10);
 });
-test('the twelve-second montage keeps all five scenes and two climbing edits', () => {
+test('the twelve-second montage keeps all five scenes with one uninterrupted climb', () => {
   assert.equal(DURATION, 18);
   assert.equal(PLAYBACK_RATE, 1.5);
   assert.equal(RUN_SECONDS, 12);
   assert.equal(SCENES.reduce((sum, scene) => sum + scene.duration, 0), DURATION);
   assert.ok(SCENES.every(scene => scene.duration <= 5));
-  let previous, cuts = 0;
+  let previous;
+  const shots = new Set();
+  assert.equal(recoveryFrame(SCENES[3].start).motionTime, 13);
   for (let local = 0; local < SCENES[3].duration; local += .01) {
     const frame = recoveryFrame(SCENES[3].start + local);
-    if (previous) {
-      if (frame.edit !== previous.edit) { cuts++; assert.ok(frame.motionTime - previous.motionTime > 3); }
-      else assert.ok(Math.abs(frame.motionTime - previous.motionTime - .01) < 1e-10);
-    }
+    if (previous) assert.ok(Math.abs(frame.motionTime - previous.motionTime - .01) < 1e-10);
+    shots.add(recoveryCamera(frame, [0, 0, 0]).shot);
     previous = frame;
   }
-  assert.equal(cuts, 2);
+  assert.equal(shots.size, 1);
   assert.ok(previous.motionTime > 17.98 && previous.motionTime <= 18);
 });
 test('the upright gait alternates hind feet with no airborne gap or foot-position jumps', () => {
